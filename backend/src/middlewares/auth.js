@@ -10,6 +10,9 @@ module.exports = (req, res, next) => {
     return res.status(401).json({ error: 'Token não fornecido' });
   }
 
+  if (!authHeader.startsWith('Bearer ')) { //verifica prefixo bearer
+    return res.status(401).json({ error: 'Formato de token inválido' });
+  } 
   const token = authHeader.split(' ')[1];
 
   try {
@@ -17,6 +20,7 @@ module.exports = (req, res, next) => {
     req.user = decoded; // Saves user information in the request
     next();
   } catch {
+    console.error(err); //debug
     res.status(401).json({ error: 'Token inválido' });
   }
 };
