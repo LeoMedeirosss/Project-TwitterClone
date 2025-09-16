@@ -1,12 +1,14 @@
-// src/config/db.js
-const { Pool } = require('pg');
+const knex = require('knex');
 
-const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'twitter_clone',
-  password: 'dkprio00', 
-  port: 5432,             
+const db = knex({
+  client: 'pg',
+  connection: {
+    user: 'postgres',
+    host: 'localhost',
+    database: 'twitter_clone',
+    password: 'dkprio00',
+    port: 5432,
+  },
 });
 
-module.exports = pool;
+module.exports = db;
