@@ -1,26 +1,73 @@
 //Component that renders the header (tabs).
 //Used in the feed and profile.
-import { Animated, View, Text, StyleSheet} from 'react-native';
+import { Animated, View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useAuth } from '../contexts/AuthContext';
 
 const HEADER_HEIGHT = 90;
 
-export default function Header({ scrollY }: { scrollY: Animated.Value }) {
+interface HeaderProps {
+  scrollY: Animated.Value;
+  onProfilePress?: () => void;
+}
+
+export default function Header({ scrollY, onProfilePress }: HeaderProps) {
+  const router = useRouter();
+  const { isAuthenticated, logout } = useAuth();
+  
   const opacity = scrollY.interpolate({
     inputRange: [0, 60],
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
 
+  function handleProfilePress() {
+    if (isAuthenticated) {
+      onProfilePress?.();
+    } else {
+      router.push('/auth/login');
+    }
+  }
+
+  function handleLogout() {
+    Alert.alert(
+      'Sair da conta',
+      'Tem certeza que quer sair do seu perfil?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Sair',
+          style: 'destructive',
+          onPress: logout,
+        },
+      ]
+    );
+  }
+
   return (
     <Animated.View style={[styles.header, { opacity }]}> 
-      <View style={styles.tabsContainer}>
-        <View style={styles.tabActive}>
-          <Text style={styles.tabTextActive}>Para você</Text>
-          <View style={styles.tabIndicator} />
+      <View style={styles.headerContent}>
+        <TouchableOpacity style={styles.profileIcon} onPress={handleProfilePress}>
+          <Ionicons name="person-circle-outline" size={32} color="#fff" />
+        </TouchableOpacity>
+        <View style={styles.tabsContainer}>
+          <View style={styles.tabActive}>
+            <Text style={styles.tabTextActive}>Para você</Text>
+            <View style={styles.tabIndicator} />
+          </View>
+          <View style={styles.tab}>
+            <Text style={styles.tabText}>Seguindo</Text>
+          </View>
         </View>
-        <View style={styles.tab}>
-          <Text style={styles.tabText}>Seguindo</Text>
-        </View>
+        {isAuthenticated && (
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Ionicons name="log-out-outline" size={24} color="#fff" />
+          </TouchableOpacity>
+        )}
       </View>
     </Animated.View>
   );
@@ -39,12 +86,30 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 10,
   },
-  tabsContainer: {
-    width: '70%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  headerContent: {
+    width: '100%',
+    paddingHorizontal: 16,
     marginTop: 40,
+    position: 'relative',
+  },
+  profileIcon: {
+    position: 'absolute',
+    top: 0,
+    left: 16,
+    zIndex: 1,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 50,
+  },
+  logoutButton: {
+    position: 'absolute',
+    top: 0,
+    right: 16,
+    zIndex: 1,
+    padding: 8,
   },
   tab: {
     padding: 15,
@@ -54,15 +119,17 @@ const styles = StyleSheet.create({
   },
   tabText: {
     color: '#fff',
+    paddingTop: 5,
   },
   tabTextActive: {
     color: '#fff',
     fontWeight: 'bold',
+    paddingTop: 5,
   },
   tabIndicator: {
-    borderBottomWidth: 3,
+    borderBottomWidth: 2.75,
     borderBottomColor: '#1d9bf0',
-    width: '105%',
+    width: '110%',
     alignSelf: 'center',
     borderRadius: 12,
   },

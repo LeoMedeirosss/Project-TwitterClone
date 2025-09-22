@@ -85,6 +85,9 @@ export default function Register() {
       <TouchableOpacity onPress={() => router.push('/auth/login')}>
         <Text style={styles.link}>Já tem conta? Entrar</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.replace('/')} style={styles.backButton}>
+        <Text style={styles.backButtonText}>Voltar ao feed</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -130,5 +133,14 @@ const styles = StyleSheet.create({
     color: '#1d9bf0',
     marginTop: 8,
     fontSize: 15,
+  },
+  backButton: {
+    marginTop: 16,
+    padding: 12,
+  },
+  backButtonText: {
+    color: '#888',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

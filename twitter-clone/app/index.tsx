@@ -1,11 +1,15 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { View, StyleSheet, Animated } from "react-native";
 import Header from "../src/components/Header";
 import Feed from "../src/components/Feed";
 import BottomBar from "../src/components/BottomBar";
+import Sidebar from "../src/components/Sidebar";
+import { useAuth } from "../src/contexts/AuthContext";
 
 export default function Index() {
   const scrollY = useRef(new Animated.Value(0)).current;
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -14,9 +18,15 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <Header scrollY={scrollY} />
+      <Header scrollY={scrollY} onProfilePress={() => setSidebarVisible(true)} />
       <Feed onScroll={handleScroll} />
       <BottomBar />
+      {isAuthenticated && (
+        <Sidebar 
+          visible={sidebarVisible} 
+          onClose={() => setSidebarVisible(false)} 
+        />
+      )}
     </View>
   );
 }

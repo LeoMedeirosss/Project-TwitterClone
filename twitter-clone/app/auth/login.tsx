@@ -4,6 +4,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../../src/services/api';
+import { useAuth } from '../../src/contexts/AuthContext';
 import type { AxiosError } from 'axios';
 
 function validateEmail(email: string) {
@@ -16,6 +17,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
 
   async function handleLogin() {
     if (!validateEmail(email)) {
@@ -29,8 +31,8 @@ export default function Login() {
     setLoading(true);
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { token } = response.data;
-      await AsyncStorage.setItem('token', token);
+      const { token, user } = response.data;
+      login(token, user); // Usa o contexto de autenticação
       router.replace('/'); // Redireciona para o feed
     } catch (err) {
       let message = 'Falha no login.';
@@ -73,6 +75,9 @@ export default function Login() {
       </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push('/auth/register')}>
         <Text style={styles.link}>Não tem conta? Cadastre-se</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.replace('/')} style={styles.backButton}>
+        <Text style={styles.backButtonText}>Voltar ao feed</Text>
       </TouchableOpacity>
     </View>
   );
@@ -119,5 +124,14 @@ const styles = StyleSheet.create({
     color: '#1d9bf0',
     marginTop: 8,
     fontSize: 15,
+  },
+  backButton: {
+    marginTop: 16,
+    padding: 12,
+  },
+  backButtonText: {
+    color: '#888',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
