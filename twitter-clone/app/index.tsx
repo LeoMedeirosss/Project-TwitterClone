@@ -4,12 +4,14 @@ import Header from "../src/components/Header";
 import Feed from "../src/components/Feed";
 import BottomBar from "../src/components/BottomBar";
 import Sidebar from "../src/components/Sidebar";
+import FloatingButton from "../src/components/FloatingButton";
 import { useAuth } from "../src/contexts/AuthContext";
 
 export default function Index() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const { isAuthenticated } = useAuth();
+  const feedRef = useRef(null);
 
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -19,7 +21,7 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <Header scrollY={scrollY} onProfilePress={() => setSidebarVisible(true)} />
-      <Feed onScroll={handleScroll} />
+      <Feed ref={feedRef} onScroll={handleScroll} />
       <BottomBar />
       {isAuthenticated && (
         <Sidebar 
@@ -27,6 +29,7 @@ export default function Index() {
           onClose={() => setSidebarVisible(false)} 
         />
       )}
+      <FloatingButton />
     </View>
   );
 }

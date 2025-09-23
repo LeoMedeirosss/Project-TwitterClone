@@ -1,54 +1,115 @@
-import React from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { View, FlatList, StyleSheet, RefreshControl } from 'react-native';
 import TweetCard from './tweetCard';
+import api from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import { useTweets } from '../contexts/TweetContext';
 
-const mockTweets = [
-  {
-    id: '1',
-    user: {
-      name: 'Fabrizio Romano',
-      username: 'FabrizioRomano',
-      avatar: '',
-    },
-    content: 'Ballon d’Or rankings.\n9 — Nuno Mendes.\n8 — Gigio Donnarumma.\n7 — Cole Palmer.\n6 — Kylian Mbappé.\n5 — Raphinha.\n4 — Mohamed Salah.\n3 — Vitinha.',
-    createdAt: '1h',
-    likes: 51500,
-    comments: 2100,
-    retweets: 3800,
-    views: 1900000,
-  },
-  {
-    id: '2',
-    user: {
-      name: 'Ballon d\'Or',
-      username: 'ballondor',
-      avatar: '',
-    },
-    content: "OUSMANE DEMBÉLÉ IS THE 2025 MEN'S BALLON D'OR! #ballondor",
-    createdAt: '1h',
-    likes: 80000,
-    comments: 5000,
-    retweets: 12000,
-    views: 2500000,
-    image: '',
-  },
-];
+interface Tweet {
+  id: string;
+  content: string;
+  created_at: string;
+  likes_count: number;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+  };
+}
 
-export default function Feed({ onScroll }) {
+interface FeedRef {
+  addNewTweet: (tweet: Tweet) => void;
+}
+
+const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const { tweets, setTweets, refreshTweets } = useTweets();
+
+  useEffect(() => {
+    setLoading(false); // Os tweets já vêm do contexto
+  }, []);
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    try {
+      const response = await api.get('/tweets');
+      setTweets(response.data);
+    } catch (error) {
+      console.log('Erro ao buscar tweets:', error);
+    }
+    setRefreshing(false);
+  }
+  console.log
+
+  function formatTweetData(tweet: Tweet) {
+    // Verificar se tweet.user existe e tem email
+    const userEmail = tweet.user?.email || 'usuario@gmail.com';
+    const username = userEmail.split('@')[0]; // Remove @gmail.com etc
+    const timeAgo = getTimeAgo(tweet.created_at);
+    
+    return {
+      id: tweet.id,
+      user: {
+        name: tweet.user?.username || 'Usuário',
+        username: username,
+        avatar: '',
+      },
+      content: tweet.content,
+      createdAt: timeAgo,
+      likes: tweet.likes_count || 0,
+      comments: Math.floor(Math.random() * 1000),
+      retweets: Math.floor(Math.random() * 500), 
+      views: Math.floor(Math.random() * 100000), 
+    };
+  }
+
+  function getTimeAgo(dateString: string) {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Agora';
+    if (diffInMinutes < 60) return `${diffInMinutes}m`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
+    return `${Math.floor(diffInMinutes / 1440)}d`;
+  }
+
+  // Função para adicionar novo tweet (será chamada quando um tweet for criado)
+  function addNewTweet(newTweet: Tweet) {
+    setTweets(prevTweets => [newTweet, ...prevTweets]);
+  }
+
+  // Expor a função para outros componentes
+  useImperativeHandle(ref, () => ({
+    addNewTweet,
+  }));
+
   return (
     <View style={styles.container}>
       <FlatList
-        data={mockTweets}
+        data={tweets ? tweets.map(formatTweetData) : []}
         renderItem={({ item }) => <TweetCard tweet={item} />}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 90, paddingBottom: 70 }}
         onScroll={onScroll}
         scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#1d9bf0"
+            colors={["#1d9bf0"]}
+          />
+        }
       />
     </View>
   );
-}
+});
+
+Feed.displayName = 'Feed';
 
 const styles = StyleSheet.create({
   container: {
@@ -56,3 +117,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
 });
+
+export default Feed;
