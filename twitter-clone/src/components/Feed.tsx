@@ -41,7 +41,6 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
     }
     setRefreshing(false);
   }
-  console.log
 
   function formatTweetData(tweet: Tweet) {
     // Verificar se tweet.user existe e tem email
@@ -61,7 +60,8 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
       likes: tweet.likes_count || 0,
       comments: Math.floor(Math.random() * 1000),
       retweets: Math.floor(Math.random() * 500), 
-      views: Math.floor(Math.random() * 100000), 
+      views: Math.floor(Math.random() * 100000),
+      avatar_url: (tweet as any).avatar_url, // Incluir avatar_url do tweet
     };
   }
 

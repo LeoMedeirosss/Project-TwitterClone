@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions, Easing, Image } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 
 const { width } = Dimensions.get('window');
@@ -12,6 +13,7 @@ interface SidebarProps {
 
 export default function Sidebar({ visible, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
+  const router = useRouter();
   
   const slideAnim = React.useRef(new Animated.Value(-width * 0.7)).current;
   const overlayOpacity = React.useRef(new Animated.Value(0)).current;
@@ -60,6 +62,11 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
     onClose();
   }
 
+  function handleProfilePress() {
+    router.push('/app/profile');
+    onClose();
+  }
+
   if (!visible) return null;
 
   return (
@@ -72,7 +79,14 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
         {/* Header do usuário */}
         <View style={styles.userSection}>
           <View style={styles.profileImage}>
-            <Ionicons name="person" size={60} color="#fff" />
+            {(user as any)?.avatar_url ? (
+              <Image 
+                source={{ uri: `http://10.0.2.2:3000${(user as any).avatar_url}` }}
+                style={styles.profileAvatar}
+              />
+            ) : (
+              <Ionicons name="person" size={60} color="#fff" />
+            )}
           </View>
           <Text style={styles.userName}>{user?.username || 'Usuário'}</Text>
           <Text style={styles.userHandle}>@{user?.username?.toLowerCase() || 'usuario'}</Text>
@@ -84,7 +98,7 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
 
         {/* Menu items */}
         <View style={styles.menuSection}>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={handleProfilePress}>
             <Ionicons name="person-outline" size={24} color="#fff" />
             <Text style={styles.menuText}>Perfil</Text>
           </TouchableOpacity>
@@ -190,6 +204,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
+    overflow: 'hidden',
+  },
+  profileAvatar: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
   },
   userName: {
     color: '#fff',

@@ -5,11 +5,15 @@ require('dotenv').config();
 const app = express();
 const authRoutes = require('./src/routes/authRoutes');
 const tweetsRoutes = require('./src/routes/tweetsLikesRoutes');
+const userRoutes = require('./src/routes/userRoutes');
 
 // Middlewares
 app.use(cors()); // Permite requisições de qualquer origem
 app.use(express.json()); // allows receiving JSON in the body
 app.use(express.urlencoded({ extended: true }));
+
+// Servir arquivos estáticos (imagens de avatar)
+app.use('/uploads', express.static('uploads'));
 
 // Rota de teste
 app.get('/', (req, res) => {
@@ -19,6 +23,7 @@ app.get('/', (req, res) => {
 // Define routes
 app.use('/auth', authRoutes);
 app.use('/tweets', tweetsRoutes);
+app.use('/users', userRoutes);
 
 // Middleware de tratamento de erros
 app.use((err, req, res, next) => {

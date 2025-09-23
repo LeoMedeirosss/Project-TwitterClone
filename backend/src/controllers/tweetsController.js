@@ -41,10 +41,12 @@ exports.getFeed = async (req, res) => {
     const tweetsWithUserObject = tweets.map(tweet => ({
       ...tweet,
       likes_count: parseInt(tweet.likes_count) || 0,
+      avatar_url: tweet.avatar_url,
       user: {
         id: tweet.user_id,
         username: tweet.username,
-        email: tweet.email
+        email: tweet.email,
+        avatar_url: tweet.avatar_url
       }
     }));
 
@@ -67,10 +69,12 @@ exports.getTweetsByUser = async (req, res) => {
     const tweetsWithUserObject = tweets.map(tweet => ({
       ...tweet,
       likes_count: parseInt(tweet.likes_count) || 0,
+      avatar_url: tweet.avatar_url,
       user: {
         id: tweet.user_id,
         username: tweet.username,
-        email: tweet.email
+        email: tweet.email,
+        avatar_url: tweet.avatar_url
       }
     }));
 

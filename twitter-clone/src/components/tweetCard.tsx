@@ -48,8 +48,17 @@ export default function TweetCard({ tweet }: { tweet: any }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        {/* Avatar (pode ser adicionado depois) */}
-        <View style={styles.avatarPlaceholder} />
+        {/* Avatar do usuário */}
+        <View style={styles.avatarPlaceholder}>
+          {tweet.avatar_url ? (
+            <Image 
+              source={{ uri: `http://10.0.2.2:3000${tweet.avatar_url}` }}
+              style={styles.avatarImage}
+            />
+          ) : (
+            <Feather name="user" size={20} color="#fff" />
+          )}
+        </View>
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={styles.name}>{tweet.user.name}</Text>
@@ -94,6 +103,14 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     backgroundColor: '#222',
     marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   name: {
     color: '#fff',

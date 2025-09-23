@@ -25,6 +25,15 @@ const User = {
   async findAll() {
     const result = await db('users').select('*');
     return result;
+  },
+
+  // Atualiza avatar do usuário
+  async updateAvatar(id, avatarUrl) {
+    const result = await db('users')
+      .where({ id })
+      .update({ avatar_url: avatarUrl })
+      .returning('*');
+    return result[0];
   }
 };
 

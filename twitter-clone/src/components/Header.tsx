@@ -1,6 +1,6 @@
 //Component that renders the header (tabs).
 //Used in the feed and profile.
-import { Animated, View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Animated, View, Text, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,7 +14,7 @@ interface HeaderProps {
 
 export default function Header({ scrollY, onProfilePress }: HeaderProps) {
   const router = useRouter();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   
   const opacity = scrollY.interpolate({
     inputRange: [0, 60],
@@ -52,7 +52,14 @@ export default function Header({ scrollY, onProfilePress }: HeaderProps) {
     <Animated.View style={[styles.header, { opacity }]}> 
       <View style={styles.headerContent}>
         <TouchableOpacity style={styles.profileIcon} onPress={handleProfilePress}>
-          <Ionicons name="person-circle-outline" size={32} color="#fff" />
+          {isAuthenticated && (user as any)?.avatar_url ? (
+            <Image 
+              source={{ uri: `http://10.0.2.2:3000${(user as any).avatar_url}` }}
+              style={styles.profileAvatar}
+            />
+          ) : (
+            <Ionicons name="person-circle-outline" size={32} color="#fff" />
+          )}
         </TouchableOpacity>
         <View style={styles.tabsContainer}>
           <View style={styles.tabActive}>
@@ -97,6 +104,11 @@ const styles = StyleSheet.create({
     top: 0,
     left: 16,
     zIndex: 1,
+  },
+  profileAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   tabsContainer: {
     flexDirection: 'row',
