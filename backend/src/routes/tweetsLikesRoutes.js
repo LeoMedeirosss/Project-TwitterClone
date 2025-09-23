@@ -10,6 +10,7 @@ const router = express.Router();
 router.post('/', auth, validateTweet, tweetController.createTweet);
 router.get('/', tweetController.getFeed);
 router.get('/:userId', tweetController.getTweetsByUser);
+router.delete('/:id', auth, tweetController.deleteTweet);
 
 // Likes
 router.post('/:id/like', auth, likeController.likeTweet);

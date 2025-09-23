@@ -1,10 +1,50 @@
 //Component that renders a tweet (user, content, likes).
 //Used in the feed and profile.
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useAuth } from '../contexts/AuthContext';
+import { useTweets } from '../contexts/TweetContext';
+import api from '../services/api';
 
-export default function TweetCard({ tweet }) {
+export default function TweetCard({ tweet }: { tweet: any }) {
+  const { user } = useAuth();
+  const { removeTweet } = useTweets();
+
+  // Verifica se o tweet pertence ao usuário logado
+  // Como o tweet não tem user.id, vamos usar o username ou email para comparar
+  const isOwner = user && tweet.user && (
+    user.username === tweet.user.name || // Compara nome completo
+    user.email?.split('@')[0] === tweet.user.username || // Compara username do email
+    user.username === tweet.user.username // Compara username direto
+  );
+
+  async function handleDeleteTweet() {
+    Alert.alert(
+      'Excluir Tweet',
+      'Tem certeza que deseja excluir este tweet?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete(`/tweets/${tweet.id}`);
+              removeTweet(tweet.id); // Remove do contexto local
+              Alert.alert('Sucesso', 'Tweet excluído com sucesso!');
+            } catch (error) {
+              console.error('Erro ao excluir tweet:', error);
+              Alert.alert('Erro', 'Não foi possível excluir o tweet. Tente novamente.');
+            }
+          },
+        },
+      ]
+    );
+  }
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -24,6 +64,11 @@ export default function TweetCard({ tweet }) {
             <View style={styles.stat}><Feather name="repeat" size={16} color="#888" /><Text style={styles.statText}>{tweet.retweets}</Text></View>
             <View style={styles.stat}><Feather name="heart" size={16} color="#888" /><Text style={styles.statText}>{tweet.likes}</Text></View>
             <View style={styles.stat}><Feather name="bar-chart-2" size={16} color="#888" /><Text style={styles.statText}>{tweet.views}</Text></View>
+            {isOwner && (
+              <TouchableOpacity onPress={handleDeleteTweet} style={styles.deleteButton}>
+                <Feather name="trash-2" size={16} color="#888" />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>
@@ -88,5 +133,10 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 13,
     marginLeft: 3,
+  },
+  deleteButton: {
+    padding: 8,
+    borderRadius: 20,
+    marginLeft: 'auto', // Empurra para a direita
   },
 });

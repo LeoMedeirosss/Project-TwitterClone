@@ -80,3 +80,36 @@ exports.getTweetsByUser = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Delete tweet (only owner can delete)
+exports.deleteTweet = async (req, res) => {
+  const { id } = req.params;
+  const user_id = req.user.id; // Comes from auth middleware
+
+  try {
+    // Check if tweet exists and belongs to user
+    const tweet = await Tweet.findById(id);
+    if (!tweet) {
+      return res.status(404).json({ error: 'Tweet não encontrado' });
+    }
+
+    if (tweet.user_id !== user_id) {
+      return res.status(403).json({ error: 'Você só pode excluir seus próprios tweets' });
+    }
+
+    // Delete tweet using model
+    const deletedTweet = await Tweet.delete(id, user_id);
+    
+    if (!deletedTweet) {
+      return res.status(404).json({ error: 'Tweet não encontrado ou já foi excluído' });
+    }
+
+    res.json({ 
+      message: 'Tweet excluído com sucesso',
+      deletedTweet 
+    });
+  } catch (err) {
+    console.error("Erro ao excluir tweet:", err);
+    res.status(500).json({ error: err.message });
+  }
+};

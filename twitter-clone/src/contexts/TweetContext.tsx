@@ -15,6 +15,7 @@ interface Tweet {
 interface TweetContextType {
   tweets: Tweet[];
   addTweet: (tweet: Tweet) => void;
+  removeTweet: (tweetId: string) => void;
   refreshTweets: () => Promise<void>;
   setTweets: (tweets: Tweet[]) => void;
 }
@@ -55,6 +56,10 @@ export function TweetProvider({ children }: { children: ReactNode }) {
     setTweetsState(prevTweets => [newTweet, ...prevTweets]);
   }
 
+  function removeTweet(tweetId: string) {
+    setTweetsState(prevTweets => prevTweets.filter(tweet => tweet.id !== tweetId));
+  }
+
   function setTweets(newTweets: Tweet[]) {
     setTweetsState(newTweets);
   }
@@ -65,7 +70,7 @@ export function TweetProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <TweetContext.Provider value={{ tweets, addTweet, refreshTweets, setTweets }}>
+    <TweetContext.Provider value={{ tweets, addTweet, removeTweet, refreshTweets, setTweets }}>
       {children}
     </TweetContext.Provider>
   );

@@ -38,6 +38,15 @@ const Tweet = {
       .groupBy('tweets.id', 'users.id', 'users.username', 'users.email')
       .orderBy('tweets.created_at', 'desc');
     return result;
+  },
+
+  // Exclui um tweet (apenas o dono pode excluir)
+  async delete(id, user_id) {
+    const result = await db('tweets')
+      .where({ id, user_id }) // Garante que só o dono pode excluir
+      .del()
+      .returning('*');
+    return result[0];
   }
 };
 
