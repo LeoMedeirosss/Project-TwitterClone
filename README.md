@@ -1,6 +1,6 @@
 # Twitter Clone - Projeto Completo
 
-Um clone do Twitter desenvolvido com **Node.js + Express + PostgreSQL** no backend e **React Native + Expo** no frontend.
+Um clone completo do Twitter desenvolvido com **Node.js + Express + PostgreSQL** no backend e **React Native + Expo** no frontend, incluindo sistema de avatar e upload de imagens.
 
 ## 🚀 Tecnologias Utilizadas
 
@@ -9,14 +9,18 @@ Um clone do Twitter desenvolvido com **Node.js + Express + PostgreSQL** no backe
 - **PostgreSQL** com **Knex.js**
 - **JWT** para autenticação
 - **bcryptjs** para hash de senhas
+- **Multer** para upload de arquivos
+- **CORS** habilitado
 - Estrutura **MVC** (Models, Views, Controllers)
 
 ### Frontend
 - **React Native** com **Expo**
+- **Expo Router** para navegação
 - **Redux Toolkit** para gerenciamento de estado
-- **React Navigation** para navegação
+- **Context API** para funcionalidades específicas (Auth, Tweet)
 - **AsyncStorage** para persistência local
 - **Axios** para comunicação com API
+- **Expo Image Picker** para seleção de imagens
 - **React Hook Form** para formulários
 
 ## 📁 Estrutura do Projeto
@@ -26,18 +30,19 @@ AmigoTech/
 ├── backend/                 # API Node.js + Express
 │   ├── src/
 │   │   ├── controllers/     # Lógica de negócio
-│   │   ├── middlewares/     # Middlewares (auth, validação)
+│   │   ├── middlewares/     # Middlewares (auth, validação, upload)
 │   │   ├── models/          # Models do banco
 │   │   ├── routes/          # Definição das rotas
 │   │   ├── migrations/      # Migrations do banco
 │   │   └── config/          # Configurações
+│   ├── uploads/            # Arquivos de upload (avatars)
 │   ├── server.js           # Servidor principal
 │   └── knexfile.js         # Configuração do Knex
 └── twitter-clone/          # App React Native
     ├── app/                # Telas (Expo Router)
     ├── src/
     │   ├── components/     # Componentes reutilizáveis
-    │   ├── contexts/       # Context API
+    │   ├── contexts/       # Context API (Auth, Tweet)
     │   ├── redux/          # Redux store e slices
     │   └── services/       # API calls
     └── package.json
@@ -75,7 +80,7 @@ npm run migrate
 npm run seed
 
 # Iniciar servidor
-npm run dev
+node server.js
 ```
 
 ### 3. Frontend
@@ -86,8 +91,14 @@ cd twitter-clone
 # Instalar dependências
 npm install
 
+# Instalar dependência do image picker
+npx expo install expo-image-picker
+
 # Iniciar Expo
-npm start
+npx expo start
+
+# Iniciar Android
+digitar "a" no terminal
 ```
 
 ## 🔧 Configuração da API
@@ -96,7 +107,6 @@ No arquivo `twitter-clone/src/services/api.ts`, ajuste a baseURL conforme seu am
 
 - **Expo Go (web)**: `http://localhost:3000`
 - **Android Emulator**: `http://10.0.2.2:3000`
-- **Dispositivo físico**: `http://SEU_IP:3000`
 
 ## 📱 Funcionalidades Implementadas
 
@@ -106,44 +116,85 @@ No arquivo `twitter-clone/src/services/api.ts`, ajuste a baseURL conforme seu am
   - POST `/auth/login` - Login de usuário
 - [x] **Tweets**
   - POST `/tweets` - Criar tweet (autenticado)
-  - GET `/tweets` - Feed geral
+  - GET `/tweets` - Feed geral com avatar dos usuários
   - GET `/tweets/:userId` - Tweets de um usuário
+  - DELETE `/tweets/:id` - Excluir tweet (apenas dono)
 - [x] **Likes**
   - POST `/tweets/:id/like` - Curtir tweet
   - DELETE `/tweets/:id/like` - Descurtir tweet
+- [x] **Upload de Avatar**
+  - POST `/users/avatar` - Upload de foto de perfil
+  - DELETE `/users/avatar` - Remover foto de perfil
+  - Servir arquivos estáticos em `/uploads`
 - [x] **Middlewares**
   - Autenticação JWT
   - Validação de dados
+  - Upload de arquivos (Multer)
   - CORS habilitado
 
 ### ✅ Frontend (React Native)
 - [x] **Navegação**
-  - Stack Navigator configurado
+  - Expo Router configurado
   - Telas de Login/Register
   - Stack privada (Feed, Criar Tweet, Perfil)
+  - Sidebar com menu lateral
 - [x] **Estado Global**
   - Redux Toolkit configurado
   - AuthSlice (usuário e token)
   - TweetSlice (feed e tweets)
+  - Context API para funcionalidades específicas
+  - Sincronização de tweets e avatar
 - [x] **Telas Principais**
   - Login/Registro com validação
   - Feed com FlatList e pull-to-refresh
   - Criar Tweet com contador de caracteres
-  - Perfil de usuário
+  - Perfil de usuário com avatar
+- [x] **Sistema de Avatar**
+  - Upload de foto de perfil
+  - Seleção de imagem da galeria
+  - Crop automático (1:1)
+  - Exibição no header, sidebar e tweets
+  - Remoção de avatar
 - [x] **Funcionalidades**
   - Armazenamento de token no AsyncStorage
   - Interceptador de requisições (Authorization header)
   - Sistema de likes/deslikes
+  - Excluir próprios tweets
   - Interface moderna (tema escuro)
+  - Permissões de galeria
 
 ## 🎯 Próximos Passos
 
 - [ ] Implementar paginação no feed
-- [ ] Adicionar upload de imagens
+- [ ] Upload de imagens nos tweets
 - [ ] Sistema de seguir/deixar de seguir
 - [ ] Notificações push
 - [ ] Busca de usuários e tweets
+- [ ] Comentários nos tweets
+- [ ] Retweets
 - [ ] Temas personalizáveis
+
+## 🖼️ Sistema de Avatar
+
+O projeto inclui um sistema completo de avatar:
+
+### Backend
+- **Upload seguro** com Multer (JPG, PNG, máx 5MB)
+- **Armazenamento local** em `/uploads/avatars/`
+- **Servir arquivos estáticos** via Express
+- **Campo avatar_url** na tabela users
+- **API endpoints** para upload e remoção
+
+### Frontend
+- **Seleção de imagem** com Expo Image Picker
+- **Crop automático** em proporção 1:1
+- **Exibição em múltiplos locais:**
+  - Header (32x32px)
+  - Sidebar (70x70px)
+  - Perfil (80x80px)
+  - Tweets no feed (44x44px)
+- **Atualização em tempo real** via Context API
+- **Fallback** para ícone padrão quando não há avatar
 
 ## 🐛 Troubleshooting
 
@@ -156,11 +207,3 @@ No arquivo `twitter-clone/src/services/api.ts`, ajuste a baseURL conforme seu am
 - Verifique se o backend está rodando na porta 3000
 - Ajuste a baseURL no `api.ts` conforme seu ambiente
 - Para Android, use `http://10.0.2.2:3000`
-
-### Erro de CORS
-- Certifique-se que o CORS está habilitado no backend
-- Verifique se a origem está permitida
-
-## 📄 Licença
-
-Este projeto foi desenvolvido para fins educacionais.
