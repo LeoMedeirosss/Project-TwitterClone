@@ -19,7 +19,7 @@ module.exports = (req, res, next) => {
     const decoded = jwt.verify(token, SECRET); // Validates token
     req.user = decoded; // Saves user information in the request
     next();
-  } catch {
+  } catch (err) {
     console.error(err); //debug
     res.status(401).json({ error: 'Token inválido' });
   }

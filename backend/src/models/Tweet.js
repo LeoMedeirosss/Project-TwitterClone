@@ -1,46 +1,43 @@
-const pool = require('../config/db');
+const db = require('../config/db');
 
 const Tweet = {
   // Cria um novo tweet
   async create({ user_id, content }) {
-    const result = await pool.query(
-      'INSERT INTO tweets (user_id, content) VALUES ($1, $2) RETURNING *',
-      [user_id, content]
-    );
-    return result.rows[0];
+    const result = await db('tweets')
+      .insert({ user_id, content })
+      .returning('*');
+    return result[0];
   },
 
   // Busca tweet por id
   async findById(id) {
-    const result = await pool.query(
-      'SELECT * FROM tweets WHERE id = $1',
-      [id]
-    );
-    return result.rows[0];
+    const result = await db('tweets').where({ id }).first();
+    return result;
   },
 
   // Lista todos os tweets (feed geral)
   async findAll() {
-    const result = await pool.query(
-      `SELECT tweets.*, users.username 
-       FROM tweets 
-       JOIN users ON tweets.user_id = users.id 
-       ORDER BY tweets.created_at DESC`
-    );
-    return result.rows;
+    const result = await db('tweets')
+      .select('tweets.*', 'users.username', 'users.email')
+      .select(db.raw('COUNT(likes.id) as likes_count'))
+      .join('users', 'tweets.user_id', 'users.id')
+      .leftJoin('likes', 'tweets.id', 'likes.tweet_id')
+      .groupBy('tweets.id', 'users.id', 'users.username', 'users.email')
+      .orderBy('tweets.created_at', 'desc');
+    return result;
   },
 
   // Lista tweets de um usuário específico
   async findByUserId(user_id) {
-    const result = await pool.query(
-      `SELECT tweets.*, users.username 
-       FROM tweets 
-       JOIN users ON tweets.user_id = users.id 
-       WHERE tweets.user_id = $1 
-       ORDER BY tweets.created_at DESC`,
-      [user_id]
-    );
-    return result.rows;
+    const result = await db('tweets')
+      .select('tweets.*', 'users.username', 'users.email')
+      .select(db.raw('COUNT(likes.id) as likes_count'))
+      .join('users', 'tweets.user_id', 'users.id')
+      .leftJoin('likes', 'tweets.id', 'likes.tweet_id')
+      .where('tweets.user_id', user_id)
+      .groupBy('tweets.id', 'users.id', 'users.username', 'users.email')
+      .orderBy('tweets.created_at', 'desc');
+    return result;
   }
 };
 

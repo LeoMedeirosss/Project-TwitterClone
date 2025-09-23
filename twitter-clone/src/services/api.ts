@@ -3,7 +3,8 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const api = axios.create({
-  baseURL: "http://10.0.2.2:3000", // backend local
+  baseURL: "http://localhost:3000", // backend local - use localhost para web/Expo Go
+  // Para Android Emulator use: "http://10.0.2.2:3000"
 });
 
 // Intercepta requests e adiciona token

@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const Like = require('../models/Like');
 
 // Like tweet
 exports.likeTweet = async (req, res) => {
@@ -6,18 +6,25 @@ exports.likeTweet = async (req, res) => {
   const user_id = req.user.id;
 
   try {
-    // Check if you've liked it before
-    const existing = await db('likes').where({ tweet_id: id, user_id }).first();
-    if (existing) {
+    // Check if user already liked this tweet using model
+    const alreadyLiked = await Like.isLiked({ user_id, tweet_id: id });
+    if (alreadyLiked) {
       return res.status(400).json({ error: 'Você já curtiu este tweet.' });
     }
 
-    const inserted = await db('likes')
-      .insert({ tweet_id: id, user_id })
-      .returning('*');
+    // Create like using model
+    const like = await Like.create({ user_id, tweet_id: id });
 
-    res.json(inserted[0]);
+    // Get updated like count
+    const likeCount = await Like.countByTweetId(id);
+
+    res.json({ 
+      like,
+      message: 'Tweet curtido com sucesso!',
+      likeCount 
+    });
   } catch (err) {
+    console.error("Erro ao curtir tweet:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -28,13 +35,24 @@ exports.unlikeTweet = async (req, res) => {
   const user_id = req.user.id;
 
   try {
-    const deleted = await db('likes').where({ tweet_id: id, user_id }).del();
-    if (!deleted) {
+    // Check if user has liked this tweet
+    const hasLiked = await Like.isLiked({ user_id, tweet_id: id });
+    if (!hasLiked) {
       return res.status(400).json({ error: 'Você não curtiu este tweet.' });
     }
 
-    res.json({ message: 'Like removido com sucesso.' });
+    // Remove like using model
+    const removedLike = await Like.remove({ user_id, tweet_id: id });
+    
+    // Get updated like count
+    const likeCount = await Like.countByTweetId(id);
+
+    res.json({ 
+      message: 'Like removido com sucesso.',
+      likeCount 
+    });
   } catch (err) {
+    console.error("Erro ao remover like:", err);
     res.status(500).json({ error: err.message });
   }
 };
