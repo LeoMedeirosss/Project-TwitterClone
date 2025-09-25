@@ -1,5 +1,5 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl } from 'react-native';
+import { View, FlatList, StyleSheet, RefreshControl, Text } from 'react-native';
 import TweetCard from './tweetCard';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -96,6 +96,12 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
         contentContainerStyle={{ paddingTop: 90, paddingBottom: 70 }}
         onScroll={onScroll}
         scrollEventThrottle={16}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>Faça seu primeiro tweet!</Text>
+            <Text style={styles.emptySubtitle}>Toque no botão de criar tweet para começar.</Text>
+          </View>
+        }
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -115,6 +121,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 120,
+  },
+  emptyTitle: {
+    color: '#e6e6e6',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    color: '#9ca3af',
+    fontSize: 14,
   },
 });
 

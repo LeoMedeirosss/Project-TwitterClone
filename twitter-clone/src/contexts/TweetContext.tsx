@@ -5,6 +5,7 @@ interface Tweet {
   content: string;
   created_at: string;
   likes_count: number;
+  liked?: boolean;
   user: {
     id: string;
     username: string;
@@ -23,34 +24,7 @@ interface TweetContextType {
 const TweetContext = createContext<TweetContextType | undefined>(undefined);
 
 export function TweetProvider({ children }: { children: ReactNode }) {
-  const [tweets, setTweetsState] = useState<Tweet[]>(getInitialTweets());
-
-  function getInitialTweets(): Tweet[] {
-    return [
-      {
-        id: '1',
-        content: 'Ballon d\'Or rankings.\n9 — Nuno Mendes.\n8 — Gigio Donnarumma.\n7 — Cole Palmer.\n6 — Kylian Mbappé.\n5 — Raphinha.\n4 — Mohamed Salah.\n3 — Vitinha.',
-        created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hora atrás
-        likes_count: 51500,
-        user: {
-          id: '1',
-          username: 'FabrizioRomano',
-          email: 'fabrizio@gmail.com',
-        },
-      },
-      {
-        id: '2',
-        content: "OUSMANE DEMBÉLÉ IS THE 2025 MEN'S BALLON D'OR! #ballondor",
-        created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hora atrás
-        likes_count: 80000,
-        user: {
-          id: '2',
-          username: 'ballondor',
-          email: 'ballondor@hotmail.com',
-        },
-      },
-    ];
-  }
+  const [tweets, setTweetsState] = useState<Tweet[]>([]);
 
   function addTweet(newTweet: Tweet) {
     setTweetsState(prevTweets => [newTweet, ...prevTweets]);
