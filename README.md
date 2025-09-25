@@ -207,3 +207,4 @@ O projeto inclui um sistema completo de avatar:
 - Verifique se o backend está rodando na porta 3000
 - Ajuste a baseURL no `api.ts` conforme seu ambiente
 - Para Android, use `http://10.0.2.2:3000`
+-----------------------------------------------------------------------------------------------------------------------------------------------
