@@ -9,7 +9,7 @@ import api from '../services/api';
 
 export default function TweetCard({ tweet }: { tweet: any }) {
   const { user } = useAuth();
-  const { removeTweet } = useTweets();
+  const { removeTweet, likeTweet, unlikeTweet } = useTweets();
 
   // Verifica se o tweet pertence ao usuário logado
   // Como o tweet não tem user.id, vamos usar o username ou email para comparar
@@ -45,6 +45,22 @@ export default function TweetCard({ tweet }: { tweet: any }) {
       ]
     );
   }
+
+  async function handleLike() {
+    console.log('handleLike chamado para tweet:', tweet.id, 'liked:', tweet.liked);
+    try {
+      if (tweet.liked) {
+        console.log('Descurtindo tweet...');
+        await unlikeTweet(tweet.id);
+      } else {
+        console.log('Curtindo tweet...');
+        await likeTweet(tweet.id);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar like:', error);
+      Alert.alert('Erro', 'Não foi possível atualizar o like. Tente novamente.');
+    }
+  }
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -71,7 +87,21 @@ export default function TweetCard({ tweet }: { tweet: any }) {
           <View style={styles.statsRow}>
             <View style={styles.stat}><Feather name="message-circle" size={16} color="#888" /><Text style={styles.statText}>{tweet.comments}</Text></View>
             <View style={styles.stat}><Feather name="repeat" size={16} color="#888" /><Text style={styles.statText}>{tweet.retweets}</Text></View>
-            <View style={styles.stat}><Feather name="heart" size={16} color="#888" /><Text style={styles.statText}>{tweet.likes}</Text></View>
+            <TouchableOpacity 
+              style={styles.likeButton} 
+              onPress={handleLike}
+              activeOpacity={0.7}
+            >
+              <Feather 
+                name={tweet.liked ? "heart" : "heart"} 
+                size={16} 
+                color={tweet.liked ? "#e0245e" : "#888"} 
+                fill={tweet.liked ? "#e0245e" : "none"}
+              />
+              <Text style={[styles.statText, tweet.liked && { color: "#e0245e" }]}>
+                {tweet.likes_count || tweet.likes || 0}
+              </Text>
+            </TouchableOpacity>
             <View style={styles.stat}><Feather name="bar-chart-2" size={16} color="#888" /><Text style={styles.statText}>{tweet.views}</Text></View>
             {isOwner && (
               <TouchableOpacity onPress={handleDeleteTweet} style={styles.deleteButton}>
@@ -146,6 +176,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 3,
   },
+  likeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    padding: 8,
+    borderRadius: 20,
+    minWidth: 40,
+    minHeight: 32,
+  },
   statText: {
     color: '#888',
     fontSize: 13,
@@ -154,6 +193,6 @@ const styles = StyleSheet.create({
   deleteButton: {
     padding: 8,
     borderRadius: 20,
-    marginLeft: 'auto', // Empurra para a direita
+    marginLeft: 'auto'
   },
 });

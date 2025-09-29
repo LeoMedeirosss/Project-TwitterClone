@@ -22,14 +22,16 @@ interface FeedRef {
 }
 
 const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
-  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { isAuthenticated } = useAuth();
   const { tweets, setTweets, refreshTweets } = useTweets();
 
   useEffect(() => {
-    setLoading(false); // Os tweets já vêm do contexto
-  }, []);
+    // Carrega tweets da API quando o componente é montado
+    if (isAuthenticated) {
+      refreshTweets();
+    }
+  }, [isAuthenticated, refreshTweets]);
 
   async function handleRefresh() {
     setRefreshing(true);
@@ -78,7 +80,7 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
 
   // Função para adicionar novo tweet (será chamada quando um tweet for criado)
   function addNewTweet(newTweet: Tweet) {
-    setTweets(prevTweets => [newTweet, ...prevTweets]);
+    setTweets([newTweet, ...tweets]);
   }
 
   // Expor a função para outros componentes
