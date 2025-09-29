@@ -27,6 +27,25 @@ const Tweet = {
     return result;
   },
 
+  // Lista todos os tweets com informação se o usuário atual curtiu
+  async findAllWithUserLikes(currentUserId) {
+    const result = await db('tweets')
+      .select('tweets.*', 'users.username', 'users.email', 'users.avatar_url')
+      .select(db.raw('COUNT(likes.id) as likes_count'))
+      .select(db.raw(`
+        CASE WHEN user_likes.user_id IS NOT NULL THEN true ELSE false END as liked
+      `))
+      .join('users', 'tweets.user_id', 'users.id')
+      .leftJoin('likes', 'tweets.id', 'likes.tweet_id')
+      .leftJoin('likes as user_likes', function() {
+        this.on('tweets.id', '=', 'user_likes.tweet_id')
+            .andOn('user_likes.user_id', '=', db.raw('?', [currentUserId]));
+      })
+      .groupBy('tweets.id', 'users.id', 'users.username', 'users.email', 'users.avatar_url', 'user_likes.user_id')
+      .orderBy('tweets.created_at', 'desc');
+    return result;
+  },
+
   // Lista tweets de um usuário específico
   async findByUserId(user_id) {
     const result = await db('tweets')

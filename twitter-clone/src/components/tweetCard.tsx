@@ -8,8 +8,11 @@ import { useTweets } from '../contexts/TweetContext';
 import api from '../services/api';
 
 export default function TweetCard({ tweet }: { tweet: any }) {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { removeTweet, likeTweet, unlikeTweet } = useTweets();
+
+  // Verifica se o usuário está logado
+  const isLoggedIn = isAuthenticated && user;
 
   // Verifica se o tweet pertence ao usuário logado
   // Como o tweet não tem user.id, vamos usar o username ou email para comparar
@@ -47,13 +50,27 @@ export default function TweetCard({ tweet }: { tweet: any }) {
   }
 
   async function handleLike() {
-    console.log('handleLike chamado para tweet:', tweet.id, 'liked:', tweet.liked);
+    // Verifica se o usuário está logado
+    if (!isLoggedIn) {
+      Alert.alert(
+        'Login Necessário', 
+        'Você precisa estar logado para curtir tweets.',
+        [{ text: 'OK', style: 'default' }]
+      );
+      return;
+    }
+
+    console.log('=== DEBUG LIKE ===');
+    console.log('Tweet ID:', tweet.id);
+    console.log('Tweet liked:', tweet.liked);
+    console.log('Tweet likes_count:', tweet.likes_count);
+    
     try {
       if (tweet.liked) {
-        console.log('Descurtindo tweet...');
+        console.log('🔴 Descurtindo tweet...');
         await unlikeTweet(tweet.id);
       } else {
-        console.log('Curtindo tweet...');
+        console.log('❤️ Curtindo tweet...');
         await likeTweet(tweet.id);
       }
     } catch (error) {
@@ -88,17 +105,31 @@ export default function TweetCard({ tweet }: { tweet: any }) {
             <View style={styles.stat}><Feather name="message-circle" size={16} color="#888" /><Text style={styles.statText}>{tweet.comments}</Text></View>
             <View style={styles.stat}><Feather name="repeat" size={16} color="#888" /><Text style={styles.statText}>{tweet.retweets}</Text></View>
             <TouchableOpacity 
-              style={styles.likeButton} 
+              style={[
+                styles.likeButton, 
+                !isLoggedIn && styles.disabledButton
+              ]} 
               onPress={handleLike}
-              activeOpacity={0.7}
+              activeOpacity={isLoggedIn ? 0.7 : 1}
+              disabled={!isLoggedIn}
             >
               <Feather 
                 name={tweet.liked ? "heart" : "heart"} 
                 size={16} 
-                color={tweet.liked ? "#e0245e" : "#888"} 
+                color={
+                  !isLoggedIn 
+                    ? "#555" 
+                    : tweet.liked 
+                      ? "#e0245e" 
+                      : "#888"
+                } 
                 fill={tweet.liked ? "#e0245e" : "none"}
               />
-              <Text style={[styles.statText, tweet.liked && { color: "#e0245e" }]}>
+              <Text style={[
+                styles.statText, 
+                !isLoggedIn && { color: "#555" },
+                tweet.liked && isLoggedIn && { color: "#e0245e" }
+              ]}>
                 {tweet.likes_count || tweet.likes || 0}
               </Text>
             </TouchableOpacity>
@@ -184,6 +215,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     minWidth: 40,
     minHeight: 32,
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
   statText: {
     color: '#888',

@@ -9,7 +9,13 @@ exports.likeTweet = async (req, res) => {
     // Check if user already liked this tweet using model
     const alreadyLiked = await Like.isLiked({ user_id, tweet_id: id });
     if (alreadyLiked) {
-      return res.status(400).json({ error: 'Você já curtiu este tweet.' });
+      // Se já curtiu, retorna o estado atual sem erro
+      const likeCount = await Like.countByTweetId(id);
+      return res.json({ 
+        message: 'Tweet já estava curtido.',
+        likeCount,
+        alreadyLiked: true
+      });
     }
 
     // Create like using model
@@ -38,7 +44,13 @@ exports.unlikeTweet = async (req, res) => {
     // Check if user has liked this tweet
     const hasLiked = await Like.isLiked({ user_id, tweet_id: id });
     if (!hasLiked) {
-      return res.status(400).json({ error: 'Você não curtiu este tweet.' });
+      // Se não curtiu, retorna o estado atual sem erro
+      const likeCount = await Like.countByTweetId(id);
+      return res.json({ 
+        message: 'Tweet já não estava curtido.',
+        likeCount,
+        wasNotLiked: true
+      });
     }
 
     // Remove like using model

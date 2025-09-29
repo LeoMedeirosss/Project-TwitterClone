@@ -34,13 +34,21 @@ exports.createTweet = async (req, res) => {
 // Search general tweet feed
 exports.getFeed = async (req, res) => {
   try {
-    // Get all tweets using model (already includes username and likes_count)
-    const tweets = await Tweet.findAll();
+    let tweets;
+    
+    // Se o usuário estiver logado, busca tweets com informação de likes do usuário
+    if (req.user && req.user.id) {
+      tweets = await Tweet.findAllWithUserLikes(req.user.id);
+    } else {
+      // Se não estiver logado, busca tweets sem informação de likes do usuário
+      tweets = await Tweet.findAll();
+    }
 
     // Transform to include user object structure expected by frontend
     const tweetsWithUserObject = tweets.map(tweet => ({
       ...tweet,
       likes_count: parseInt(tweet.likes_count) || 0,
+      liked: tweet.liked || false, // Garante que sempre tem o campo liked
       avatar_url: tweet.avatar_url,
       user: {
         id: tweet.user_id,

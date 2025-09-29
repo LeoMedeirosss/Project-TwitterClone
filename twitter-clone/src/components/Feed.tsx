@@ -10,6 +10,7 @@ interface Tweet {
   content: string;
   created_at: string;
   likes_count: number;
+  liked?: boolean;
   user: {
     id: string;
     username: string;
@@ -60,6 +61,8 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
       content: tweet.content,
       createdAt: timeAgo,
       likes: tweet.likes_count || 0,
+      likes_count: tweet.likes_count || 0, // Manter ambos para compatibilidade
+      liked: tweet.liked || false, // Campo essencial para o toggle
       comments: Math.floor(Math.random() * 1000),
       retweets: Math.floor(Math.random() * 500), 
       views: Math.floor(Math.random() * 100000),
