@@ -33,12 +33,6 @@ const Like = {
       .where({ user_id, tweet_id })
       .first();
     return !!result;
-  },
-
-  // Remove todos os likes do banco (para limpeza/reset)
-  async deleteAll() {
-    const result = await db('likes').del();
-    return result; // Retorna o número de registros deletados
   }
 };
 
