@@ -5,6 +5,7 @@ import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useTweets } from '../contexts/TweetContext';
 
+
 interface Tweet {
   id: string;
   content: string;
@@ -162,6 +163,24 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
     );
   };
 
+  const renderEmptyOrLoading = () => {
+    if (loading && tweets.length === 0) {
+      return (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#1d9bf0" />
+        </View>
+      );
+    } else if (tweets.length === 0) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyTitle}>Faça seu primeiro tweet!</Text>
+          <Text style={styles.emptySubtitle}>Toque no botão de criar tweet para começar.</Text>
+        </View>
+      );
+    }
+    return null;
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -175,12 +194,7 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
         contentContainerStyle={{ paddingTop: 90, paddingBottom: 70 }}
         onScroll={onScroll}
         scrollEventThrottle={16}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>Faça seu primeiro tweet!</Text>
-            <Text style={styles.emptySubtitle}>Toque no botão de criar tweet para começar.</Text>
-          </View>
-        }
+        ListEmptyComponent={renderEmptyOrLoading()}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
