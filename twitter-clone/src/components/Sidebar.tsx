@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions, Easing, Image } from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 
