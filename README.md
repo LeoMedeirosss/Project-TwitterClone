@@ -165,9 +165,7 @@ No arquivo `twitter-clone/src/services/api.ts`, ajuste a baseURL conforme seu am
 
 ## 🎯 Próximos Passos
 
-- [ ] Implementar paginação no feed
 - [ ] Upload de imagens nos tweets
-- [ ] Sistema de seguir/deixar de seguir
 - [ ] Notificações push
 - [ ] Busca de usuários e tweets
 - [ ] Comentários nos tweets
