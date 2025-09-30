@@ -15,20 +15,30 @@ const Tweet = {
     return result;
   },
 
-  // Lista todos os tweets (feed geral)
-  async findAll() {
+  // Lista todos os tweets (feed geral) com paginação
+  async findAll(limit = 10, offset = 0) {
+    // Validação dos parâmetros de paginação
+    limit = parseInt(limit) || 10;
+    offset = parseInt(offset) || 0;
+    
     const result = await db('tweets')
       .select('tweets.*', 'users.username', 'users.email', 'users.avatar_url')
       .select(db.raw('COUNT(likes.id) as likes_count'))
       .join('users', 'tweets.user_id', 'users.id')
       .leftJoin('likes', 'tweets.id', 'likes.tweet_id')
       .groupBy('tweets.id', 'users.id', 'users.username', 'users.email', 'users.avatar_url')
-      .orderBy('tweets.created_at', 'desc');
+      .orderBy('tweets.created_at', 'desc')
+      .limit(limit)
+      .offset(offset);
     return result;
   },
 
-  // Lista todos os tweets com informação se o usuário atual curtiu
-  async findAllWithUserLikes(currentUserId) {
+  // Lista todos os tweets com informação se o usuário atual curtiu, com paginação
+  async findAllWithUserLikes(currentUserId, limit = 10, offset = 0) {
+    // Validação dos parâmetros de paginação
+    limit = parseInt(limit) || 10;
+    offset = parseInt(offset) || 0;
+    
     const result = await db('tweets')
       .select('tweets.*', 'users.username', 'users.email', 'users.avatar_url')
       .select(db.raw('COUNT(likes.id) as likes_count'))
@@ -42,7 +52,9 @@ const Tweet = {
             .andOn('user_likes.user_id', '=', db.raw('?', [currentUserId]));
       })
       .groupBy('tweets.id', 'users.id', 'users.username', 'users.email', 'users.avatar_url', 'user_likes.user_id')
-      .orderBy('tweets.created_at', 'desc');
+      .orderBy('tweets.created_at', 'desc')
+      .limit(limit)
+      .offset(offset);
     return result;
   },
 

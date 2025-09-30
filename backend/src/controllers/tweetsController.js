@@ -34,14 +34,24 @@ exports.createTweet = async (req, res) => {
 // Search general tweet feed
 exports.getFeed = async (req, res) => {
   try {
+    // Parâmetros de paginação
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    
+    // Garantir que os valores são números válidos
+    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+      return res.status(400).json({ error: 'Parâmetros de paginação inválidos' });
+    }
+    
     let tweets;
     
     // Se o usuário estiver logado, busca tweets com informação de likes do usuário
     if (req.user && req.user.id) {
-      tweets = await Tweet.findAllWithUserLikes(req.user.id);
+      tweets = await Tweet.findAllWithUserLikes(req.user.id, limit, offset);
     } else {
       // Se não estiver logado, busca tweets sem informação de likes do usuário
-      tweets = await Tweet.findAll();
+      tweets = await Tweet.findAll(limit, offset);
     }
 
     // Transform to include user object structure expected by frontend

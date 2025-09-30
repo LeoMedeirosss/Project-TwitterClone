@@ -1,5 +1,5 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl, Text } from 'react-native';
+import { View, FlatList, StyleSheet, RefreshControl, Text, ActivityIndicator } from 'react-native';
 import TweetCard from './tweetCard';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,26 +24,80 @@ interface FeedRef {
 
 const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const LIMIT = 10; // Número de tweets por página
+  
   const { isAuthenticated } = useAuth();
-  const { tweets, setTweets, refreshTweets } = useTweets();
+  const { tweets, setTweets } = useTweets();
+
+  const tweetsRef = React.useRef(tweets);
+  tweetsRef.current = tweets;
+
+  const loadingRef = React.useRef(loading);
+  loadingRef.current = loading;
+
+  // Definindo a função loadTweets com useCallback para evitar dependência cíclica
+  const loadTweets = React.useCallback(async (pageNumber: number, refresh = false) => {
+    if (loadingRef.current) return;
+    
+    try {
+      setLoading(true);
+      const response = await api.get('/tweets', {
+        params: {
+          page: pageNumber,
+          limit: LIMIT
+        }
+      });
+      
+      const newTweets = response.data;
+      
+      // Verificar se há mais tweets para carregar
+      if (newTweets.length < LIMIT) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
+      
+      // Filtrar tweets duplicados usando um Set para armazenar IDs
+      if (refresh || pageNumber === 1) {
+        setTweets(newTweets);
+        setPage(1);
+      } else {
+        // Criar um conjunto de IDs existentes para evitar duplicatas
+        const existingIds = new Set(tweetsRef.current.map(tweet => tweet.id));
+        // Filtrar apenas tweets que não existem na lista atual
+        const uniqueNewTweets = newTweets.filter((tweet : any) => !existingIds.has(tweet.id));
+        
+        if (uniqueNewTweets.length > 0) {
+          setTweets((prevTweets: Tweet[]) => [...prevTweets, ...uniqueNewTweets]);
+        } else {
+          // Se não há novos tweets únicos, desativar carregamento infinito
+          setHasMore(false);
+        }
+      }
+      
+    } catch (error) {
+      console.log('Erro ao buscar tweets:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [setTweets]);
 
   useEffect(() => {
     // Carrega tweets da API quando o componente é montado
     if (isAuthenticated) {
-      refreshTweets();
+      loadTweets(1);
     }
-  }, [isAuthenticated, refreshTweets]);
+  }, [isAuthenticated, loadTweets]);
 
-  async function handleRefresh() {
+  const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    try {
-      const response = await api.get('/tweets');
-      setTweets(response.data);
-    } catch (error) {
-      console.log('Erro ao buscar tweets:', error);
-    }
+    setHasMore(true);
+    await loadTweets(1, true);
     setRefreshing(false);
-  }
+  }, [loadTweets]);
 
   function formatTweetData(tweet: Tweet) {
     // Verificar se tweet.user existe e tem email
@@ -91,6 +145,23 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
     addNewTweet,
   }));
 
+  const handleLoadMore = () => {
+    if (hasMore && !loading && !refreshing) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      loadTweets(nextPage);
+    }
+  };
+
+  const renderFooter = () => {
+    if (!loading) return null;
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="small" color="#1d9bf0" />
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -98,6 +169,9 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
         renderItem={({ item }) => <TweetCard tweet={item} />}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={renderFooter}
         contentContainerStyle={{ paddingTop: 90, paddingBottom: 70 }}
         onScroll={onScroll}
         scrollEventThrottle={16}
@@ -126,6 +200,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
+  },
+  loaderContainer: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   emptyContainer: {
     flex: 1,
