@@ -50,21 +50,6 @@ export default function TweetCard({ tweet }: { tweet: any }) {
   }
 
   async function handleLike() {
-    // Verifica se o usuário está logado
-    if (!isLoggedIn) {
-      Alert.alert(
-        'Login Necessário', 
-        'Você precisa estar logado para curtir tweets.',
-        [{ text: 'OK', style: 'default' }]
-      );
-      return;
-    }
-
-    console.log('=== DEBUG LIKE ===');
-    console.log('Tweet ID:', tweet.id);
-    console.log('Tweet liked:', tweet.liked);
-    console.log('Tweet likes_count:', tweet.likes_count);
-    
     try {
       if (tweet.liked) {
         console.log('🔴 Descurtindo tweet...');
