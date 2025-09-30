@@ -1,7 +1,7 @@
 const db = require('../config/db');
 
 const Tweet = {
-  // Cria um novo tweet
+  // Create a new tweet
   async create({ user_id, content }) {
     const result = await db('tweets')
       .insert({ user_id, content })
@@ -9,15 +9,15 @@ const Tweet = {
     return result[0];
   },
 
-  // Busca tweet por id
+  // Find a tweet by id
   async findById(id) {
     const result = await db('tweets').where({ id }).first();
     return result;
   },
 
-  // Lista todos os tweets (feed geral) com paginação
+  // List all tweets (general feed) with pagination
   async findAll(limit = 10, offset = 0) {
-    // Validação dos parâmetros de paginação
+    // Validation of pagination parameters
     limit = parseInt(limit) || 10;
     offset = parseInt(offset) || 0;
     
@@ -33,9 +33,9 @@ const Tweet = {
     return result;
   },
 
-  // Lista todos os tweets com informação se o usuário atual curtiu, com paginação
+  // List all tweets with user like information (general feed) with pagination
   async findAllWithUserLikes(currentUserId, limit = 10, offset = 0) {
-    // Validação dos parâmetros de paginação
+    // Validation of pagination parameters
     limit = parseInt(limit) || 10;
     offset = parseInt(offset) || 0;
     
@@ -58,7 +58,7 @@ const Tweet = {
     return result;
   },
 
-  // Lista tweets de um usuário específico
+  // List tweets from a specific user
   async findByUserId(user_id) {
     const result = await db('tweets')
       .select('tweets.*', 'users.username', 'users.email', 'users.avatar_url')
@@ -71,10 +71,10 @@ const Tweet = {
     return result;
   },
 
-  // Exclui um tweet (apenas o dono pode excluir)
+  // Delete a tweet (only the owner can delete)
   async delete(id, user_id) {
     const result = await db('tweets')
-      .where({ id, user_id }) // Garante que só o dono pode excluir
+      .where({ id, user_id }) // Ensures only the owner can delete
       .del()
       .returning('*');
     return result[0];

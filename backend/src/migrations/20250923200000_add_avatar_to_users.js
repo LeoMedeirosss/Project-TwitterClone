@@ -4,7 +4,7 @@
  */
 exports.up = function(knex) {
   return knex.schema.alterTable('users', function (table) {
-    table.string('avatar_url').nullable(); // URL da imagem do avatar
+    table.string('avatar_url').nullable();
   });
 };
 

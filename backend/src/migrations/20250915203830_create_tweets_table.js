@@ -7,7 +7,7 @@ exports.up = function(knex) {
     table.increments('id').primary();
     table.integer('user_id').unsigned().notNullable()
       .references('id').inTable('users')
-      .onDelete('CASCADE'); // se usuário for deletado, deleta tweets
+      .onDelete('CASCADE');
     table.string('content', 280).notNullable();
     table.timestamps(true, true);
   });

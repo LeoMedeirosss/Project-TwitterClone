@@ -16,9 +16,9 @@ module.exports = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, SECRET);
-    req.user = decoded; // Salva informações do usuário na requisição
+    req.user = decoded; // Saves user information in the request
   } catch (err) {
-    // Se o token é inválido, continua sem usuário (não bloqueia)
+    // If the token is invalid, it remains without a user (does not block)
     req.user = null;
   }
   

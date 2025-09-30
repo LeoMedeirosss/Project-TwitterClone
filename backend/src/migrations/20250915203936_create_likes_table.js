@@ -8,11 +8,11 @@ exports.up = function(knex) {
 
     table.integer('user_id').unsigned().notNullable()
       .references('id').inTable('users')
-      .onDelete('CASCADE'); // se usuário for deletado, deleta likes
+      .onDelete('CASCADE');
       
     table.integer('tweet_id').unsigned().notNullable()
       .references('id').inTable('tweets')
-      .onDelete('CASCADE'); // se tweet for deletado, deleta likes
+      .onDelete('CASCADE');
     table.timestamps(true, true);
 
     table.unique(['user_id', 'tweet_id']);

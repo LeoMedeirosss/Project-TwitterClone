@@ -1,7 +1,7 @@
 const db = require('../config/db');
 
 const User = {
-  // Cria um novo usuário
+  // Create a new user
   async create({ username, email, password_hash }) {
     const result = await db('users')
       .insert({ username, email, password_hash })
@@ -9,25 +9,25 @@ const User = {
     return result[0];
   },
 
-  // Busca usuário por email
+  // Find a user by email
   async findByEmail(email) {
     const result = await db('users').where({ email }).first();
     return result;
   },
 
-  // Busca usuário por id
+  // Find a user by id
   async findById(id) {
     const result = await db('users').where({ id }).first();
     return result;
   },
 
-  // Lista todos os usuários
+  // List all users
   async findAll() {
     const result = await db('users').select('*');
     return result;
   },
 
-  // Atualiza avatar do usuário
+  // Update user avatar
   async updateAvatar(id, avatarUrl) {
     const result = await db('users')
       .where({ id })

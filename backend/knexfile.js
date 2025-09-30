@@ -7,7 +7,7 @@ module.exports = {
     connection: {
       host: '127.0.0.1', //localhost
       port: 5432,              
-      database: 'twitter_clone', // nome do banco
+      database: 'twitter_clone', // database name
       user: 'postgres',
       password: 'dkprio00'
     },

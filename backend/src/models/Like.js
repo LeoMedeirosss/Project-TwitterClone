@@ -1,7 +1,7 @@
 const db = require('../config/db');
 
 const Like = {
-  // Adiciona um like a um tweet
+  // Add a like to a tweet
   async create({ user_id, tweet_id }) {
     const result = await db('likes')
       .insert({ user_id, tweet_id })
@@ -9,7 +9,7 @@ const Like = {
     return result[0];
   },
 
-  // Remove um like de um tweet
+  // Remove a like from a tweet
   async remove({ user_id, tweet_id }) {
     const result = await db('likes')
       .where({ user_id, tweet_id })
@@ -18,7 +18,7 @@ const Like = {
     return result[0];
   },
 
-  // Conta likes de um tweet
+  // Count likes for a tweet
   async countByTweetId(tweet_id) {
     const result = await db('likes')
       .where({ tweet_id })
@@ -27,7 +27,7 @@ const Like = {
     return parseInt(result.count, 10);
   },
 
-  // Verifica se um usuário já curtiu um tweet
+  // Check if a user has liked a tweet
   async isLiked({ user_id, tweet_id }) {
     const result = await db('likes')
       .where({ user_id, tweet_id })

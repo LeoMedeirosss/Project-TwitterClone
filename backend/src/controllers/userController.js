@@ -2,7 +2,7 @@ const User = require('../models/User');
 const path = require('path');
 const fs = require('fs');
 
-// Upload avatar do usuário
+// Upload user avatar
 exports.uploadAvatar = async (req, res) => {
   try {
     if (!req.file) {
@@ -12,7 +12,7 @@ exports.uploadAvatar = async (req, res) => {
     const userId = req.user.id;
     const avatarUrl = `/uploads/avatars/${req.file.filename}`;
 
-    // Buscar usuário atual para deletar avatar antigo se existir
+    // Search current user to delete old avatar if exists
     const currentUser = await User.findById(userId);
     if (currentUser && currentUser.avatar_url) {
       const oldAvatarPath = path.join(__dirname, '../../', currentUser.avatar_url);
@@ -21,10 +21,10 @@ exports.uploadAvatar = async (req, res) => {
       }
     }
 
-    // Atualizar avatar no banco de dados
+    // Update avatar in database
     await User.updateAvatar(userId, avatarUrl);
 
-    // Buscar usuário atualizado
+    // Search updated user
     const updatedUser = await User.findById(userId);
 
     res.json({
@@ -36,7 +36,7 @@ exports.uploadAvatar = async (req, res) => {
   } catch (error) {
     console.error('Erro no upload do avatar:', error);
     
-    // Deletar arquivo se houve erro
+    // Delete file if error occurred  
     if (req.file) {
       const filePath = path.join(__dirname, '../../uploads/avatars/', req.file.filename);
       if (fs.existsSync(filePath)) {
@@ -48,21 +48,21 @@ exports.uploadAvatar = async (req, res) => {
   }
 };
 
-// Remover avatar do usuário
+// Remove user avatar
 exports.removeAvatar = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Buscar usuário atual
+    // Search current user to delete old avatar if exists
     const currentUser = await User.findById(userId);
     if (currentUser && currentUser.avatar_url) {
-      // Deletar arquivo físico
+      // Delete physical file
       const avatarPath = path.join(__dirname, '../../', currentUser.avatar_url);
       if (fs.existsSync(avatarPath)) {
         fs.unlinkSync(avatarPath);
       }
 
-      // Remover do banco de dados
+      // Remove from database
       await User.updateAvatar(userId, null);
     }
 
