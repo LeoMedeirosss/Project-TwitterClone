@@ -9,8 +9,19 @@ module.exports = {
       port: 5432,              
       database: 'twitter_clone', // database name
       user: 'postgres',
-      password: 'dkprio00'
+      password: 'dkprio00',
     },
+    migrations: {
+      directory: './migrations'
+    },
+    seeds: {
+      directory: './seeds'
+    }
+  },
+
+  test: {
+    client: 'pg',
+    connection: process.env.DATABASE_URL,
     migrations: {
       directory: './migrations'
     },
