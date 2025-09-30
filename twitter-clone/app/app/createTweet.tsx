@@ -12,9 +12,10 @@ export default function CreateTweet() {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { user } = useAuth();
-  const { addTweet } = useTweets();
+  const { user } = useAuth(); // Logged user from context
+  const { addTweet } = useTweets(); // Function to update global tweets state
 
+  // Handle tweet creation
   async function handleCreateTweet() {
     if (!content.trim()) {
       Alert.alert('Erro', 'O tweet não pode estar vazio.');
@@ -31,7 +32,7 @@ export default function CreateTweet() {
       const response = await api.post('/tweets', { content: content.trim() });
       const newTweet = response.data;
       
-      // Simular resposta da API com dados do usuário atual
+      // Simulate API response with current user data
       const tweetWithUser = {
         ...newTweet,
         user: {
@@ -41,13 +42,14 @@ export default function CreateTweet() {
         }
       };
       
-      // Adicionar o tweet ao contexto global
+      // Add the tweet to the global tweets state
       addTweet(tweetWithUser);
       
       setLoading(false);
       Alert.alert('Sucesso', 'Tweet criado com sucesso!');
-      router.back(); // Volta para a tela anterior
+      router.back(); // Go back to the previous screen
     } catch (error) {
+      console.log(error)
       setLoading(false);
       Alert.alert('Erro', 'Falha ao criar o tweet. Tente novamente.');
     }
@@ -72,7 +74,11 @@ export default function CreateTweet() {
   const isOverLimit = content.length > MAX_CHARS;
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Avoid keyboard overlap
+    >
+      {/* Header with close and Tweet button */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleCancel}>
           <Ionicons name="close" size={24} color="#fff" />
@@ -88,11 +94,14 @@ export default function CreateTweet() {
         </TouchableOpacity>
       </View>
 
+      {/* Main content area */}
       <View style={styles.content}>
+        {/* Profile placeholder */}
         <View style={styles.profileImage}>
           <Ionicons name="person" size={24} color="#fff" />
         </View>
         
+        {/* Text input and actions */}
         <View style={styles.textContainer}>
           <TextInput
             style={styles.textInput}
@@ -105,6 +114,7 @@ export default function CreateTweet() {
             autoFocus
           />
           
+          {/* Footer with actions and character counter */}
           <View style={styles.footer}>
             <View style={styles.actions}>
               <TouchableOpacity style={styles.actionButton}>
@@ -118,6 +128,7 @@ export default function CreateTweet() {
               </TouchableOpacity>
             </View>
             
+            {/* Character counter */}
             <View style={styles.charCounter}>
               <Text style={[styles.charText, isOverLimit && styles.charTextOverLimit]}>
                 {charsRemaining}

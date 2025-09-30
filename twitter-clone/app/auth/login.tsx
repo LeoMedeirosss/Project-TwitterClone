@@ -1,25 +1,28 @@
-//Login page
+// Login page
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../../src/services/api';
 import { useAuth } from '../../src/contexts/AuthContext';
 import type { AxiosError } from 'axios';
 
+// Utility function to validate email format using regex
 function validateEmail(email: string) {
-  // Regex simples para validar formato de e-mail
   return /^\S+@\S+\.\S+$/.test(email);
 }
 
 export default function Login() {
+  // Local state for form inputs and loading indicator
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
   const router = useRouter();
   const { login } = useAuth();
 
+  // Handles login process
   async function handleLogin() {
+    // Basic client-side validations
     if (!validateEmail(email)) {
       Alert.alert('E-mail inválido', 'Digite um e-mail válido.');
       return;
@@ -28,14 +31,21 @@ export default function Login() {
       Alert.alert('Senha obrigatória', 'Digite sua senha.');
       return;
     }
+
     setLoading(true);
     try {
+      // Send login request to backend
       const response = await api.post('/auth/login', { email, password });
       const { token, user } = response.data;
-      login(token, user); // Usa o contexto de autenticação
-      router.replace('/'); // Redireciona para o feed
+
+      // Save auth data in global context
+      login(token, user);
+
+      router.replace('/');
     } catch (err) {
       let message = 'Falha no login.';
+
+      // Handle API error with AxiosError type
       if (err && typeof err === 'object' && 'response' in err) {
         console.log(err);
         const error = err as AxiosError<any>;
@@ -44,6 +54,8 @@ export default function Login() {
         console.log(err);
         message = err.message;
       }
+
+      // Show error to user
       Alert.alert('Erro', message);
     } finally {
       setLoading(false);
@@ -53,6 +65,8 @@ export default function Login() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Entrar</Text>
+
+      {/* Email input */}
       <TextInput
         style={styles.input}
         placeholder="E-mail"
@@ -62,6 +76,8 @@ export default function Login() {
         autoCapitalize="none"
         keyboardType="email-address"
       />
+
+      {/* Password input */}
       <TextInput
         style={styles.input}
         placeholder="Senha"
@@ -70,12 +86,17 @@ export default function Login() {
         onChangeText={setPassword}
         secureTextEntry
       />
+
+      {/* Submit button */}
       <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? 'Entrando...' : 'Entrar'}</Text>
       </TouchableOpacity>
+
+      {/* Navigation links */}
       <TouchableOpacity onPress={() => router.push('/auth/register')}>
         <Text style={styles.link}>Não tem conta? Cadastre-se</Text>
       </TouchableOpacity>
+
       <TouchableOpacity onPress={() => router.replace('/')} style={styles.backButton}>
         <Text style={styles.backButtonText}>Voltar ao feed</Text>
       </TouchableOpacity>
@@ -83,6 +104,7 @@ export default function Login() {
   );
 }
 
+// Styles for the Login screen
 const styles = StyleSheet.create({
   container: {
     flex: 1,

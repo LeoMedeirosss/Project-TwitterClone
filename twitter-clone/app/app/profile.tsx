@@ -1,4 +1,4 @@
-//profile screen → shows tweets from a specific user.
+// Profile screen → shows tweets from the logged-in user
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -21,10 +21,15 @@ interface Tweet {
 }
 
 export default function Profile() {
+  // State to store user tweets
   const [userTweets, setUserTweets] = useState<Tweet[]>([]);
+  // Loading state when fetching tweets
   const [loading, setLoading] = useState(true);
+  // State for pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
+  // State while uploading or removing avatar
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
   const { user, logout, updateUser } = useAuth();
   const router = useRouter();
 
@@ -34,6 +39,7 @@ export default function Profile() {
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch user tweets from API
   async function loadUserTweets() {
     if (!user) return;
     
@@ -49,12 +55,14 @@ export default function Profile() {
     }
   }
 
+  // Refresh tweets when pulling down
   async function handleRefresh() {
     setRefreshing(true);
     await loadUserTweets();
     setRefreshing(false);
   }
 
+  // Logout confirmation
   function handleLogout() {
     Alert.alert(
       'Sair',
@@ -73,6 +81,7 @@ export default function Profile() {
     );
   }
 
+  // Handle avatar press → choose between gallery or remove
   async function handleAvatarPress() {
     Alert.alert(
       'Foto de Perfil',
@@ -85,6 +94,7 @@ export default function Profile() {
     );
   }
 
+  // Open image picker to select new avatar
   async function pickImage() {
     try {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -110,6 +120,7 @@ export default function Profile() {
     }
   }
 
+  // Upload avatar to API
   async function uploadAvatar(imageAsset: any) {
     try {
       setUploadingAvatar(true);
@@ -127,7 +138,7 @@ export default function Profile() {
         },
       });
 
-      // Atualizar o usuário no contexto com os novos dados
+      // Update user in context with new avatar
       if (response.data.user) {
         updateUser(response.data.user);
       }
@@ -147,7 +158,7 @@ export default function Profile() {
       setUploadingAvatar(true);
       await api.delete('/users/avatar');
       
-      // Atualizar o usuário no contexto removendo o avatar
+      // Update user in context removing avatar_url
       if (user) {
         updateUser({ ...user, avatar_url: null } as any);
       }
@@ -161,6 +172,7 @@ export default function Profile() {
     }
   }
 
+  // Format tweet data for rendering in TweetCard
   function formatTweetData(tweet: Tweet) {
     const timeAgo = getTimeAgo(tweet.created_at);
     
@@ -174,13 +186,14 @@ export default function Profile() {
       content: tweet.content,
       createdAt: timeAgo,
       likes: tweet.likes_count || 0,
-      comments: Math.floor(Math.random() * 100),
-      retweets: Math.floor(Math.random() * 50), 
-      views: Math.floor(Math.random() * 1000),
+      comments: Math.floor(Math.random() * 100), // Mocked comments
+      retweets: Math.floor(Math.random() * 50),  // Mocked retweets
+      views: Math.floor(Math.random() * 1000),   // Mocked views
       avatar_url: (tweet as any).avatar_url, 
     };
   }
 
+  // Format timestamp → "Agora", "Xm", "Xh", "Xd"
   function getTimeAgo(dateString: string) {
     const now = new Date();
     const date = new Date(dateString);
@@ -192,6 +205,7 @@ export default function Profile() {
     return `${Math.floor(diffInMinutes / 1440)}d`;
   }
 
+  // If user not found
   if (!user) {
     return (
       <View style={styles.container}>
@@ -202,7 +216,8 @@ export default function Profile() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+
+      {/* Header with back button, user info and logout */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Feather name="arrow-left" size={24} color="#fff" />
@@ -216,7 +231,7 @@ export default function Profile() {
         </TouchableOpacity>
       </View>
 
-      {/* Profile Info */}
+      {/* Profile info section (avatar, name, email, join date, stats) */}
       <View style={styles.profileSection}>
         <TouchableOpacity 
           style={styles.avatarContainer} 
@@ -255,6 +270,7 @@ export default function Profile() {
           </Text>
         </View>
 
+        {/* User stats */}
         <View style={styles.statsContainer}>
           <View style={styles.stat}>
             <Text style={styles.statNumber}>{userTweets.length}</Text>
@@ -263,7 +279,7 @@ export default function Profile() {
         </View>
       </View>
 
-      {/* Tweets List */}
+      {/* Tweets section */}
       <View style={styles.tweetsSection}>
         <Text style={styles.sectionTitle}>Tweets</Text>
         

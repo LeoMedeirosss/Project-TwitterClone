@@ -1,25 +1,30 @@
-//Register page
+// Register page
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import api from '../../src/services/api';
 import type { AxiosError } from 'axios';
 
+// Utility function to validate email format using regex
 function validateEmail(email: string) {
   return /^\S+@\S+\.\S+$/.test(email);
 }
+
+// At least 7 characters, one uppercase letter and one number
 function validatePassword(password: string) {
-  // Mínimo 7 caracteres, pelo menos uma maiúscula e um número
   return /^(?=.*[A-Z])(?=.*\d).{7,}$/.test(password);
 }
 
 export default function Register() {
+  // Local state for form fields
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
   const router = useRouter();
 
+  // Handles registration process
   async function handleRegister() {
     if (!name) {
       Alert.alert('Nome obrigatório', 'Digite seu nome.');
@@ -30,22 +35,33 @@ export default function Register() {
       return;
     }
     if (!validatePassword(password)) {
-      Alert.alert('Senha inválida', 'A senha deve ter no mínimo 7 caracteres, pelo menos uma letra maiúscula e um número.');
+      Alert.alert(
+        'Senha inválida',
+        'A senha deve ter no mínimo 7 caracteres, pelo menos uma letra maiúscula e um número.'
+      );
       return;
     }
+
     setLoading(true);
     try {
+      // Send register request to backend
       await api.post('/auth/register', { username: name, email, password });
+
+      // Show success and redirect to login
       Alert.alert('Sucesso', 'Cadastro realizado! Faça login.');
       router.replace('/auth/login');
     } catch (err) {
       let message = 'Falha no cadastro.';
+
+      // Handle API error with AxiosError type
       if (err && typeof err === 'object' && 'response' in err) {
         const error = err as AxiosError<any>;
         message = error?.response?.data?.message || message;
       } else if (err instanceof Error) {
         message = err.message;
       }
+
+      // Show error to user
       Alert.alert('Erro', message);
     } finally {
       setLoading(false);
@@ -55,6 +71,8 @@ export default function Register() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Criar conta</Text>
+
+      {/* Name input */}
       <TextInput
         style={styles.input}
         placeholder="Nome"
@@ -62,6 +80,8 @@ export default function Register() {
         value={name}
         onChangeText={setName}
       />
+
+      {/* Email input */}
       <TextInput
         style={styles.input}
         placeholder="E-mail"
@@ -71,6 +91,8 @@ export default function Register() {
         autoCapitalize="none"
         keyboardType="email-address"
       />
+
+      {/* Password input */}
       <TextInput
         style={styles.input}
         placeholder="Senha"
@@ -79,12 +101,17 @@ export default function Register() {
         onChangeText={setPassword}
         secureTextEntry
       />
+
+      {/* Submit button */}
       <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? 'Cadastrando...' : 'Cadastrar'}</Text>
       </TouchableOpacity>
+
+      {/* Navigation links */}
       <TouchableOpacity onPress={() => router.push('/auth/login')}>
         <Text style={styles.link}>Já tem conta? Entrar</Text>
       </TouchableOpacity>
+
       <TouchableOpacity onPress={() => router.replace('/')} style={styles.backButton}>
         <Text style={styles.backButtonText}>Voltar ao feed</Text>
       </TouchableOpacity>
