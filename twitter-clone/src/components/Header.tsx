@@ -1,5 +1,5 @@
-//Component that renders the header (tabs).
-//Used in the feed and profile.
+// Component that renders the header (tabs).
+// Used in the feed and profile screens.
 import { Animated, View, Text, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -16,12 +16,14 @@ export default function Header({ scrollY, onProfilePress }: HeaderProps) {
   const router = useRouter();
   const { isAuthenticated, logout, user } = useAuth();
   
+  // Interpolates opacity based on scroll position
   const opacity = scrollY.interpolate({
     inputRange: [0, 60],
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
 
+  // Handles profile press (redirects to login if not authenticated)
   function handleProfilePress() {
     if (isAuthenticated) {
       onProfilePress?.();
@@ -30,6 +32,7 @@ export default function Header({ scrollY, onProfilePress }: HeaderProps) {
     }
   }
 
+  // Handles logout confirmation
   function handleLogout() {
     Alert.alert(
       'Sair da conta',
@@ -51,6 +54,8 @@ export default function Header({ scrollY, onProfilePress }: HeaderProps) {
   return (
     <Animated.View style={[styles.header, { opacity }]}> 
       <View style={styles.headerContent}>
+
+        {/* Profile button: shows avatar if logged in, otherwise default icon */}
         <TouchableOpacity style={styles.profileIcon} onPress={handleProfilePress}>
           {isAuthenticated && (user as any)?.avatar_url ? (
             <Image 
@@ -61,6 +66,8 @@ export default function Header({ scrollY, onProfilePress }: HeaderProps) {
             <Ionicons name="person-circle-outline" size={32} color="#fff" />
           )}
         </TouchableOpacity>
+
+        {/* Tabs (For You / Following) */}
         <View style={styles.tabsContainer}>
           <View style={styles.tabActive}>
             <Text style={styles.tabTextActive}>Para você</Text>
@@ -70,6 +77,8 @@ export default function Header({ scrollY, onProfilePress }: HeaderProps) {
             <Text style={styles.tabText}>Seguindo</Text>
           </View>
         </View>
+
+        {/* Logout button (only visible if authenticated) */}
         {isAuthenticated && (
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={24} color="#fff" />

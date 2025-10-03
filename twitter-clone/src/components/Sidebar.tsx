@@ -15,12 +15,13 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
   
+  // Animated values for sliding effect and overlay opacity
   const slideAnim = React.useRef(new Animated.Value(-width * 0.7)).current;
   const overlayOpacity = React.useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
     if (visible) {
-      // Animação de entrada: aparece da esquerda para a direita com curva suave
+      // Entry animation: slides in from left with smooth easing
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 0,
@@ -36,7 +37,6 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
         }),
       ]).start();
     } else {
-      // Animação de saída: volta da direita para a esquerda com curva suave
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: -width * 0.7,
@@ -51,11 +51,11 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
           useNativeDriver: true,
         }),
       ]).start(() => {
-        // Garante que a sidebar seja completamente removida após a animação
+        // Ensures the sidebar is completely hidden after animation
         slideAnim.setValue(-width * 0.7);
       });
     }
-  }, [visible]);
+  }, [visible, overlayOpacity, slideAnim]);
 
   function handleLogout() {
     logout();
@@ -67,16 +67,20 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
     onClose();
   }
 
+  // Do not render anything if sidebar is not visible
   if (!visible) return null;
 
   return (
     <>
+      {/* Dark overlay behind the sidebar */}
       <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
         <TouchableOpacity style={styles.overlayTouchable} onPress={onClose} />
       </Animated.View>
       
+      {/* Sidebar container */}
       <Animated.View style={[styles.sidebar, { transform: [{ translateX: slideAnim }] }]}>
-        {/* Header do usuário */}
+        
+        {/* User header section */}
         <View style={styles.userSection}>
           <View style={styles.profileImage}>
             {(user as any)?.avatar_url ? (
@@ -96,7 +100,7 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
           </View>
         </View>
 
-        {/* Menu items */}
+        {/* Sidebar menu items */}
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem} onPress={handleProfilePress}>
             <Ionicons name="person-outline" size={24} color="#fff" />
@@ -147,7 +151,6 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
           </TouchableOpacity>
         </View>
 
-        {/* Bottom section */}
         <View style={styles.bottomSection}>
           <TouchableOpacity style={styles.menuItem}>
             <Ionicons name="settings-outline" size={24} color="#fff" />

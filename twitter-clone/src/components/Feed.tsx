@@ -5,7 +5,6 @@ import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useTweets } from '../contexts/TweetContext';
 
-
 interface Tweet {
   id: string;
   content: string;
@@ -23,12 +22,13 @@ interface FeedRef {
   addNewTweet: (tweet: Tweet) => void;
 }
 
+// Feed component using forwardRef to expose functions externally
 const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false); // Pull-to-refresh state
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const LIMIT = 10; // Número de tweets por página
+  const [hasMore, setHasMore] = useState(true); // Controls infinite scroll
+  const LIMIT = 10; // Number of tweets per page
   
   const { isAuthenticated } = useAuth();
   const { tweets, setTweets } = useTweets();
@@ -39,9 +39,8 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
   const loadingRef = React.useRef(loading);
   loadingRef.current = loading;
 
-  // Definindo a função loadTweets com useCallback para evitar dependência cíclica
   const loadTweets = React.useCallback(async (pageNumber: number, refresh = false) => {
-    if (loadingRef.current) return;
+    if (loadingRef.current) return; // Prevent duplicate calls while loading
     
     try {
       setLoading(true);
@@ -54,27 +53,23 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
       
       const newTweets = response.data;
       
-      // Verificar se há mais tweets para carregar
       if (newTweets.length < LIMIT) {
         setHasMore(false);
       } else {
         setHasMore(true);
       }
       
-      // Filtrar tweets duplicados usando um Set para armazenar IDs
+      // Replace tweets if refreshing, otherwise append unique tweets
       if (refresh || pageNumber === 1) {
         setTweets(newTweets);
         setPage(1);
       } else {
-        // Criar um conjunto de IDs existentes para evitar duplicatas
         const existingIds = new Set(tweetsRef.current.map(tweet => tweet.id));
-        // Filtrar apenas tweets que não existem na lista atual
-        const uniqueNewTweets = newTweets.filter((tweet : any) => !existingIds.has(tweet.id));
+        const uniqueNewTweets = newTweets.filter((tweet: any) => !existingIds.has(tweet.id));
         
         if (uniqueNewTweets.length > 0) {
           setTweets((prevTweets: Tweet[]) => [...prevTweets, ...uniqueNewTweets]);
         } else {
-          // Se não há novos tweets únicos, desativar carregamento infinito
           setHasMore(false);
         }
       }
@@ -87,7 +82,6 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
   }, [setTweets]);
 
   useEffect(() => {
-    // Carrega tweets da API quando o componente é montado
     if (isAuthenticated) {
       loadTweets(1);
     }
@@ -100,10 +94,10 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
     setRefreshing(false);
   }, [loadTweets]);
 
+  // Format API tweet into UI-friendly object
   function formatTweetData(tweet: Tweet) {
-    // Verificar se tweet.user existe e tem email
     const userEmail = tweet.user?.email || 'usuario@gmail.com';
-    const username = userEmail.split('@')[0]; // Remove @gmail.com etc
+    const username = userEmail.split('@')[0]; // Use prefix of email as fallback username
     const timeAgo = getTimeAgo(tweet.created_at);
     
     return {
@@ -116,15 +110,16 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
       content: tweet.content,
       createdAt: timeAgo,
       likes: tweet.likes_count || 0,
-      likes_count: tweet.likes_count || 0, // Manter ambos para compatibilidade
-      liked: tweet.liked || false, // Campo essencial para o toggle
+      likes_count: tweet.likes_count || 0,
+      liked: tweet.liked || false, // Needed for toggle like feature
       comments: Math.floor(Math.random() * 1000),
       retweets: Math.floor(Math.random() * 500), 
       views: Math.floor(Math.random() * 100000),
-      avatar_url: (tweet as any).avatar_url, // Incluir avatar_url do tweet
+      avatar_url: (tweet as any).avatar_url,
     };
   }
 
+  // Utility: convert timestamp into "time ago" format
   function getTimeAgo(dateString: string) {
     const now = new Date();
     const date = new Date(dateString);
@@ -136,16 +131,17 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
     return `${Math.floor(diffInMinutes / 1440)}d`;
   }
 
-  // Função para adicionar novo tweet (será chamada quando um tweet for criado)
+  // Add new tweet at the top of the list
   function addNewTweet(newTweet: Tweet) {
     setTweets([newTweet, ...tweets]);
   }
 
-  // Expor a função para outros componentes
+  // Expose addNewTweet via ref so parent components can call it
   useImperativeHandle(ref, () => ({
     addNewTweet,
   }));
 
+  // Load more tweets when user reaches the end of the list
   const handleLoadMore = () => {
     if (hasMore && !loading && !refreshing) {
       const nextPage = page + 1;
@@ -154,6 +150,7 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
     }
   };
 
+  // Footer loader (appears while loading more tweets)
   const renderFooter = () => {
     if (!loading) return null;
     return (
@@ -163,6 +160,7 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
     );
   };
 
+  // Empty state (when there are no tweets yet)
   const renderEmptyOrLoading = () => {
     if (loading && tweets.length === 0) {
       return (

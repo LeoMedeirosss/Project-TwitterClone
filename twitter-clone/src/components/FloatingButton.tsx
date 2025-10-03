@@ -1,3 +1,5 @@
+//Button to create a new tweet
+// If user is not authenticated, the button is not rendered
 import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

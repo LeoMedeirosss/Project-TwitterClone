@@ -1,5 +1,6 @@
-//Component that renders a tweet (user, content, likes).
-//Used in the feed and profile.
+// Component that renders a tweet (user info, content, likes, stats, actions).
+// Used inside the feed and profile screens.
+
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
@@ -11,17 +12,18 @@ export default function TweetCard({ tweet }: { tweet: any }) {
   const { user, isAuthenticated } = useAuth();
   const { removeTweet, likeTweet, unlikeTweet } = useTweets();
 
-  // Verifica se o usuário está logado
+  // Check if the user is logged in
   const isLoggedIn = isAuthenticated && user;
 
-  // Verifica se o tweet pertence ao usuário logado
-  // Como o tweet não tem user.id, vamos usar o username ou email para comparar
+  // Check if the tweet belongs to the logged-in user
+  // Since tweet doesn't contain user.id, compare using username or email
   const isOwner = user && tweet.user && (
-    user.username === tweet.user.name || // Compara nome completo
-    user.email?.split('@')[0] === tweet.user.username || // Compara username do email
-    user.username === tweet.user.username // Compara username direto
+    user.username === tweet.user.name ||
+    user.email?.split('@')[0] === tweet.user.username ||
+    user.username === tweet.user.username
   );
 
+  // Handles tweet deletion with confirmation alert
   async function handleDeleteTweet() {
     Alert.alert(
       'Excluir Tweet',
@@ -37,10 +39,10 @@ export default function TweetCard({ tweet }: { tweet: any }) {
           onPress: async () => {
             try {
               await api.delete(`/tweets/${tweet.id}`);
-              removeTweet(tweet.id); // Remove do contexto local
+              removeTweet(tweet.id); // Remove from local context
               Alert.alert('Sucesso', 'Tweet excluído com sucesso!');
             } catch (error) {
-              console.error('Erro ao excluir tweet:', error);
+              console.error('Error deleting tweet:', error);
               Alert.alert('Erro', 'Não foi possível excluir o tweet. Tente novamente.');
             }
           },
@@ -52,21 +54,20 @@ export default function TweetCard({ tweet }: { tweet: any }) {
   async function handleLike() {
     try {
       if (tweet.liked) {
-        console.log('🔴 Descurtindo tweet...');
         await unlikeTweet(tweet.id);
       } else {
-        console.log('❤️ Curtindo tweet...');
         await likeTweet(tweet.id);
       }
     } catch (error) {
-      console.error('Erro ao atualizar like:', error);
+      console.error('Error updating like:', error);
       Alert.alert('Erro', 'Não foi possível atualizar o like. Tente novamente.');
     }
   }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        {/* Avatar do usuário */}
+        {/* User avatar */}
         <View style={styles.avatarPlaceholder}>
           {tweet.avatar_url ? (
             <Image 
@@ -77,18 +78,36 @@ export default function TweetCard({ tweet }: { tweet: any }) {
             <Feather name="user" size={20} color="#fff" />
           )}
         </View>
+
+        {/* Tweet content */}
         <View style={{ flex: 1 }}>
+          {/* User name, username and timestamp */}
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={styles.name}>{tweet.user.name}</Text>
             <Text style={styles.username}> @{tweet.user.username} · {tweet.createdAt}</Text>
           </View>
+
+          {/* Tweet text */}
           <Text style={styles.content}>{tweet.content}</Text>
+
+          {/* Optional image */}
           {tweet.image ? (
             <Image source={{ uri: tweet.image }} style={styles.tweetImage} />
           ) : null}
+
+          {/* Tweet actions: comments, retweets, likes, views */}
           <View style={styles.statsRow}>
-            <View style={styles.stat}><Feather name="message-circle" size={16} color="#888" /><Text style={styles.statText}>{tweet.comments}</Text></View>
-            <View style={styles.stat}><Feather name="repeat" size={16} color="#888" /><Text style={styles.statText}>{tweet.retweets}</Text></View>
+            <View style={styles.stat}>
+              <Feather name="message-circle" size={16} color="#888" />
+              <Text style={styles.statText}>{tweet.comments}</Text>
+            </View>
+
+            <View style={styles.stat}>
+              <Feather name="repeat" size={16} color="#888" />
+              <Text style={styles.statText}>{tweet.retweets}</Text>
+            </View>
+
+            {/* Like button - only enabled for logged-in users */}
             <TouchableOpacity 
               style={[
                 styles.likeButton, 
@@ -118,7 +137,13 @@ export default function TweetCard({ tweet }: { tweet: any }) {
                 {tweet.likes_count || tweet.likes || 0}
               </Text>
             </TouchableOpacity>
-            <View style={styles.stat}><Feather name="bar-chart-2" size={16} color="#888" /><Text style={styles.statText}>{tweet.views}</Text></View>
+
+            <View style={styles.stat}>
+              <Feather name="bar-chart-2" size={16} color="#888" />
+              <Text style={styles.statText}>{tweet.views}</Text>
+            </View>
+
+            {/* Delete button only visible for the owner */}
             {isOwner && (
               <TouchableOpacity onPress={handleDeleteTweet} style={styles.deleteButton}>
                 <Feather name="trash-2" size={16} color="#888" />
