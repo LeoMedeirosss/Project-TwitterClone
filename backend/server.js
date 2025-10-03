@@ -21,15 +21,17 @@ app.get('/', (res) => {
 });
 
 // Define routes
-app.use('/auth', authRoutes);
-app.use('/tweets', tweetsRoutes);
-app.use('/users', userRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/tweets', tweetsRoutes);
+app.use('/api/users', userRoutes);
 
 // Error handling middleware
-app.use((err, res) => {
+app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Algo deu errado!' });
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+
+module.exports = app;
