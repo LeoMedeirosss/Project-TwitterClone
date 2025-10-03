@@ -1,6 +1,8 @@
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
+const path = require('path');
+
 module.exports = {
   development: {
     client: 'pg',
@@ -12,10 +14,10 @@ module.exports = {
       password: 'dkprio00',
     },
     migrations: {
-      directory: './migrations'
+      directory: path.join(__dirname, 'src', 'migrations')
     },
     seeds: {
-      directory: './seeds'
+      directory: path.join(__dirname, 'src', 'seeds')
     }
   },
 
@@ -23,10 +25,10 @@ module.exports = {
     client: 'pg',
     connection: process.env.DATABASE_URL,
     migrations: {
-      directory: './migrations'
+      directory: path.join(__dirname, 'src', 'migrations')
     },
     seeds: {
-      directory: './seeds'
+      directory: path.join(__dirname, 'src', 'seeds')
     }
   }
 };
