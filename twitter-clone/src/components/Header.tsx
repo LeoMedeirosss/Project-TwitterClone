@@ -4,15 +4,17 @@ import { Animated, View, Text, StyleSheet, TouchableOpacity, Alert, Image } from
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
+import SearchBar from './SearchBar';
 
-const HEADER_HEIGHT = 90;
+const HEADER_HEIGHT = 130; // Aumentado para acomodar a barra de pesquisa
 
 interface HeaderProps {
   scrollY: Animated.Value;
   onProfilePress?: () => void;
+  onSearch?: (username: string) => void;
 }
 
-export default function Header({ scrollY, onProfilePress }: HeaderProps) {
+export default function Header({ scrollY, onProfilePress, onSearch }: HeaderProps) {
   const router = useRouter();
   const { isAuthenticated, logout, user } = useAuth();
   
@@ -85,6 +87,11 @@ export default function Header({ scrollY, onProfilePress }: HeaderProps) {
           </TouchableOpacity>
         )}
       </View>
+      
+      {/* Search Bar */}
+      <View style={styles.searchBarContainer}>
+        <SearchBar onSearch={onSearch || ((username) => console.log('Pesquisando por:', username))} />
+      </View>
     </Animated.View>
   );
 }
@@ -153,5 +160,11 @@ const styles = StyleSheet.create({
     width: '110%',
     alignSelf: 'center',
     borderRadius: 12,
+  },
+  searchBarContainer: {
+    width: '100%',
+    paddingHorizontal: 16,
+    marginTop: 5,
+    marginBottom: 10,
   },
 });

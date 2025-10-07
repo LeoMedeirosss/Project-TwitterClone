@@ -4,6 +4,7 @@ import TweetCard from './tweetCard';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useTweets } from '../contexts/TweetContext';
+import SearchBar from './SearchBar';
 
 interface Tweet {
   id: string;
@@ -28,6 +29,7 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true); // Controls infinite scroll
+  const [searchUsername, setSearchUsername] = useState<string | null>(null); // New state for search
   const LIMIT = 10; // Number of tweets per page
   
   const { isAuthenticated } = useAuth();
@@ -39,16 +41,22 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
   const loadingRef = React.useRef(loading);
   loadingRef.current = loading;
 
-  const loadTweets = React.useCallback(async (pageNumber: number, refresh = false) => {
+  const loadTweets = React.useCallback(async (pageNumber: number, refresh = false, username: string | null = null) => {
     if (loadingRef.current) return; // Prevent duplicate calls while loading
     
     try {
       setLoading(true);
-      const response = await api.get('/tweets', {
-        params: {
-          page: pageNumber,
-          limit: LIMIT
-        }
+      const endpoint = username ? 'tweets/search' : 'tweets';
+      const params: any = {
+        page: pageNumber,
+        limit: LIMIT
+      };
+      if (username) {
+        params.username = username;
+      }
+
+      const response = await api.get(endpoint, {
+        params
       });
       
       const newTweets = response.data;
@@ -83,21 +91,29 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      loadTweets(1);
+      loadTweets(1, true, searchUsername);
     }
-  }, [isAuthenticated, loadTweets]);
+  }, [isAuthenticated, loadTweets, searchUsername]);
 
   const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
     setHasMore(true);
-    await loadTweets(1, true);
+    await loadTweets(1, true, searchUsername);
     setRefreshing(false);
-  }, [loadTweets]);
+  }, [loadTweets, searchUsername]);
+
+  const handleSearch = React.useCallback((username: string) => {
+    setSearchUsername(username);
+    setPage(1);
+    setHasMore(true);
+    setTweets([]); // Clear current tweets to show search results
+    loadTweets(1, true, username);
+  }, [loadTweets, setTweets]);
 
   // Format API tweet into UI-friendly object
   function formatTweetData(tweet: Tweet) {
     const userEmail = tweet.user?.email || 'usuario@gmail.com';
-    const username = userEmail.split('@')[0]; // Use prefix of email as fallback username
+    const username = tweet.user?.username || userEmail.split('@')[0]; // Use prefix of email as fallback username
     const timeAgo = getTimeAgo(tweet.created_at);
     
     return {
@@ -139,6 +155,7 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
   // Expose addNewTweet via ref so parent components can call it
   useImperativeHandle(ref, () => ({
     addNewTweet,
+    handleSearch
   }));
 
   // Load more tweets when user reaches the end of the list
@@ -146,7 +163,7 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
     if (hasMore && !loading && !refreshing) {
       const nextPage = page + 1;
       setPage(nextPage);
-      loadTweets(nextPage);
+      loadTweets(nextPage, false, searchUsername);
     }
   };
 
@@ -166,6 +183,13 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
       return (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#1d9bf0" />
+        </View>
+      );
+    } else if (tweets.length === 0 && searchUsername) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyTitle}>Nenhum tweet encontrado para "{searchUsername}"</Text>
+          <Text style={styles.emptySubtitle}>Tente pesquisar por outro nome de usuário.</Text>
         </View>
       );
     } else if (tweets.length === 0) {
@@ -189,7 +213,7 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
-        contentContainerStyle={{ paddingTop: 90, paddingBottom: 70 }}
+        contentContainerStyle={{ paddingTop: 130, paddingBottom: 70 }} // Ajustado para a altura do header
         onScroll={onScroll}
         scrollEventThrottle={16}
         ListEmptyComponent={renderEmptyOrLoading()}

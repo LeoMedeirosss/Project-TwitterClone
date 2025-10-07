@@ -18,9 +18,16 @@ export default function Index() {
     { useNativeDriver: false }
   );
 
+  // Função para pesquisar tweets
+  const handleSearch = (username: string) => {
+    if (feedRef.current) {
+      (feedRef.current as any).handleSearch(username);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Header scrollY={scrollY} onProfilePress={() => setSidebarVisible(true)} />
+      <Header scrollY={scrollY} onProfilePress={() => setSidebarVisible(true)} onSearch={handleSearch} />
       <Feed ref={feedRef} onScroll={handleScroll} />
       <BottomBar />
       {isAuthenticated && (

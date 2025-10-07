@@ -135,3 +135,53 @@ exports.deleteTweet = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Search tweets by username
+exports.searchTweets = async (req, res) => {
+  const { username } = req.query;
+
+  if (!username) {
+    return res.status(400).json({ error: 'O nome de usuário é obrigatório para a pesquisa.' });
+  }
+
+  try {
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // Ensure values ​​are valid numbers
+    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+      return res.status(400).json({ error: 'Parâmetros de paginação inválidos' });
+    }
+
+    let tweets;
+
+    // If the user is logged in, searches for tweets with user like information
+    if (req.user && req.user.id) {
+      tweets = await Tweet.searchByUsernameWithUserLikes(username, req.user.id, limit, offset);
+    } else {
+      // If not logged in, search for tweets without user like information
+      tweets = await Tweet.searchByUsername(username, limit, offset);
+    }
+
+    // Transform to include user object structure expected by frontend
+    const tweetsWithUserObject = tweets.map(tweet => ({
+      ...tweet,
+      likes_count: parseInt(tweet.likes_count) || 0,
+      liked: tweet.liked || false, // Ensure always has the liked field
+      avatar_url: tweet.avatar_url,
+      user: {
+        id: tweet.user_id,
+        username: tweet.username,
+        email: tweet.email,
+        avatar_url: tweet.avatar_url
+      }
+    }));
+
+    res.json(tweetsWithUserObject);
+  } catch (err) {
+    console.error("Erro ao pesquisar tweets:", err);
+    res.status(500).json({ error: err.message });
+  }
+};

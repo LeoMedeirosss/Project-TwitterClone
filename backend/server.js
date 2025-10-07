@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
 // Test route
-app.get('/', (res) => {
+app.get('/', (req, res) => {
   res.json({ message: 'Twitter Clone API funcionando!' });
 });
 

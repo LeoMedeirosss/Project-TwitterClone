@@ -78,6 +78,49 @@ const Tweet = {
       .del()
       .returning('*');
     return result[0];
+  },
+
+  // Search tweets by username with pagination
+  async searchByUsername(username, limit = 10, offset = 0) {
+    limit = parseInt(limit) || 10;
+    offset = parseInt(offset) || 0;
+
+    const result = await db('tweets')
+      .select('tweets.*', 'users.username', 'users.email', 'users.avatar_url')
+      .select(db.raw('COUNT(likes.id) as likes_count'))
+      .join('users', 'tweets.user_id', 'users.id')
+      .leftJoin('likes', 'tweets.id', 'likes.tweet_id')
+      .where('users.username', 'ILIKE', `%${username}%`)
+      .groupBy('tweets.id', 'users.id', 'users.username', 'users.email', 'users.avatar_url')
+      .orderBy('tweets.created_at', 'desc')
+      .limit(limit)
+      .offset(offset);
+    return result;
+  },
+
+  // Search tweets by username with user like information and pagination
+  async searchByUsernameWithUserLikes(username, currentUserId, limit = 10, offset = 0) {
+    limit = parseInt(limit) || 10;
+    offset = parseInt(offset) || 0;
+
+    const result = await db('tweets')
+      .select('tweets.*', 'users.username', 'users.email', 'users.avatar_url')
+      .select(db.raw('COUNT(likes.id) as likes_count'))
+      .select(db.raw(`
+        CASE WHEN user_likes.user_id IS NOT NULL THEN true ELSE false END as liked
+      `))
+      .join('users', 'tweets.user_id', 'users.id')
+      .leftJoin('likes', 'tweets.id', 'likes.tweet_id')
+      .leftJoin('likes as user_likes', function() {
+        this.on('tweets.id', '=', 'user_likes.tweet_id')
+            .andOn('user_likes.user_id', '=', db.raw('?', [currentUserId]));
+      })
+      .where('users.username', 'ILIKE', `%${username}%`)
+      .groupBy('tweets.id', 'users.id', 'users.username', 'users.email', 'users.avatar_url', 'user_likes.user_id')
+      .orderBy('tweets.created_at', 'desc')
+      .limit(limit)
+      .offset(offset);
+    return result;
   }
 };
 
