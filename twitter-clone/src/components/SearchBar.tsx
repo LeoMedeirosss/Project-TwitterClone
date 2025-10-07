@@ -1,3 +1,4 @@
+// Component that renders a simple search bar for searching users by username
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
@@ -6,22 +7,27 @@ interface SearchBarProps {
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+  // Local state to store the text typed by the user
   const [searchText, setSearchText] = useState('');
 
+  // Calls the search function passed via props
   const handleSearch = () => {
     onSearch(searchText);
   };
 
   return (
     <View style={styles.container}>
+      {/* Input field for typing the username */}
       <TextInput
         style={styles.input}
         placeholder="Pesquisar por nome de usuário..."
         placeholderTextColor="#888"
         value={searchText}
         onChangeText={setSearchText}
-        onSubmitEditing={handleSearch} // Permite pesquisar ao pressionar Enter
+        onSubmitEditing={handleSearch} // Allows pressing Enter to trigger the search
       />
+
+      {/* Button that triggers the search manually */}
       <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
         <Text style={styles.searchButtonText}>Pesquisar</Text>
       </TouchableOpacity>
