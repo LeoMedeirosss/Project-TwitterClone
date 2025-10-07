@@ -1,4 +1,4 @@
-//manages authentication
+// Slice responsible for managing authentication state (Redux)
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
@@ -11,18 +11,24 @@ const initialState: AuthState = {
   token: null,
 };
 
+// Creates a Redux "slice" for authentication
 const authSlice = createSlice({
-  name: "auth",
+  name: "auth", // Name of the slice (used in Redux store)
   initialState,
   reducers: {
-    setCredentials: ( //saves user and token when logging in
+    // Called when a user logs in successfully
+    // Stores both the user info and the authentication token in the state
+    setCredentials: (
       state,
       action: PayloadAction<{ user: AuthState["user"]; token: string }>
     ) => {
       state.user = action.payload.user;
       state.token = action.payload.token;
     },
-    logout: (state) => { //reset
+
+    // Called when a user logs out
+    // Clears the stored user and token, returning to the initial state
+    logout: (state) => {
       state.user = null;
       state.token = null;
     },
@@ -30,4 +36,5 @@ const authSlice = createSlice({
 });
 
 export const { setCredentials, logout } = authSlice.actions;
+
 export default authSlice.reducer;

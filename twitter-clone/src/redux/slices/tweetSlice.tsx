@@ -1,3 +1,4 @@
+// manages tweet feed and interactions
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface Tweet {
@@ -7,28 +8,38 @@ interface Tweet {
   content: string;
   created_at: string;
   likes: number;
-  likedByMe?: boolean;
+  likedByMe?: boolean; //indicates if the current user liked the tweet
 }
 
 interface TweetState {
-  feed: Tweet[];
+  feed: Tweet[]; //list of tweets displayed in the timeline
 }
 
 const initialState: TweetState = {
   feed: [],
 };
 
+// slice to handle tweet-related actions
 const tweetSlice = createSlice({
   name: "tweets",
   initialState,
   reducers: {
-    setFeed: (state, action: PayloadAction<Tweet[]>) => {
+    setFeed: (
+      state,
+      action: PayloadAction<Tweet[]>
+    ) => {
       state.feed = action.payload;
     },
-    addTweet: (state, action: PayloadAction<Tweet>) => {
+    addTweet: ( //adds a new tweet at the top of the feed
+      state,
+      action: PayloadAction<Tweet>
+    ) => {
       state.feed.unshift(action.payload);
     },
-    toggleLike: (state, action: PayloadAction<number>) => {
+    toggleLike: (
+      state,
+      action: PayloadAction<number>
+    ) => {
       const tweet = state.feed.find((t) => t.id === action.payload);
       if (tweet) {
         tweet.likedByMe = !tweet.likedByMe;
