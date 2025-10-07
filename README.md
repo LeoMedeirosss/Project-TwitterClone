@@ -118,6 +118,7 @@ No arquivo `twitter-clone/src/services/api.ts`, ajuste a baseURL conforme seu am
   - POST `/tweets` - Criar tweet (autenticado)
   - GET `/tweets` - Feed geral com avatar dos usuários
   - GET `/tweets/:userId` - Tweets de um usuário
+  - GET `/search` - Busca tweets por usuário
   - DELETE `/tweets/:id` - Excluir tweet (apenas dono)
 - [x] **Likes**
   - POST `/tweets/:id/like` - Curtir tweet
@@ -144,6 +145,7 @@ No arquivo `twitter-clone/src/services/api.ts`, ajuste a baseURL conforme seu am
   - TweetSlice (feed e tweets)
   - Context API para funcionalidades específicas
   - Sincronização de tweets e avatar
+  - Pesquisa de tweets por usuário
 - [x] **Telas Principais**
   - Login/Registro com validação
   - Feed com FlatList e pull-to-refresh
