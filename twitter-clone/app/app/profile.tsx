@@ -13,6 +13,7 @@ interface Tweet {
   content: string;
   created_at: string;
   likes_count: number;
+  liked?: boolean;
   user: {
     id: string;
     username: string;
@@ -46,7 +47,15 @@ export default function Profile() {
     try {
       setLoading(true);
       const response = await api.get(`/tweets/${user.id}`);
-      setUserTweets(response.data);
+      
+      // Normalizar os dados para garantir que o campo liked exista
+      const normalizedTweets = response.data.map((tweet: any) => ({
+        ...tweet,
+        liked: tweet.liked ?? false,
+        likes_count: tweet.likes_count ?? 0,
+      }));
+      
+      setUserTweets(normalizedTweets);
     } catch (error) {
       console.error('Erro ao carregar tweets do usuário:', error);
       Alert.alert('Erro', 'Não foi possível carregar seus tweets.');
@@ -186,6 +195,8 @@ export default function Profile() {
       content: tweet.content,
       createdAt: timeAgo,
       likes: tweet.likes_count || 0,
+      likes_count: tweet.likes_count || 0,
+      liked: tweet.liked || false, // Adicionando o campo liked para controle de likes
       comments: Math.floor(Math.random() * 100), // Mocked comments
       retweets: Math.floor(Math.random() * 50),  // Mocked retweets
       views: Math.floor(Math.random() * 1000),   // Mocked views
