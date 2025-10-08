@@ -10,9 +10,9 @@ module.exports = (req, res, next) => {
     return res.status(401).json({ error: 'Token não fornecido' });
   }
 
-  if (!authHeader.startsWith('Bearer ')) { //verifica prefixo bearer
+  if (!authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Formato de token inválido' });
-  } 
+  }
   const token = authHeader.split(' ')[1];
 
   try {

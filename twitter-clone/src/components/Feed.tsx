@@ -4,7 +4,6 @@ import TweetCard from './tweetCard';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useTweets } from '../contexts/TweetContext';
-import SearchBar from './SearchBar';
 
 interface Tweet {
   id: string;
@@ -213,7 +212,7 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
-        contentContainerStyle={{ paddingTop: 130, paddingBottom: 70 }} // Ajustado para a altura do header
+        contentContainerStyle={{ paddingTop: 130, paddingBottom: 70 }}
         onScroll={onScroll}
         scrollEventThrottle={16}
         ListEmptyComponent={renderEmptyOrLoading()}

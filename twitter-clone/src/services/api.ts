@@ -13,7 +13,6 @@ api.interceptors.request.use(async (config) => {
   try {
     const token = await AsyncStorage.getItem("token");
     if (token) {
-      // Adiciona o token ao cabeçalho de autorização
       config.headers.Authorization = `Bearer ${token}`;
       console.log("Authorization Header:", config.headers.Authorization);
     } else {
@@ -38,18 +37,14 @@ api.interceptors.response.use(
   async (error) => {
     console.error("API Error:", error.message);
     
-    // Tratamento específico para erro 401 (Unauthorized)
     if (error.response && error.response.status === 401) {
       console.error("Erro de autenticação: Token inválido ou expirado");
       
-      // Limpar token e dados do usuário do AsyncStorage
       try {
         await AsyncStorage.removeItem('token');
         await AsyncStorage.removeItem('userData');
         console.log("Token e dados do usuário removidos devido a erro de autenticação");
         
-        // Aqui você pode adicionar lógica para redirecionar para a tela de login
-        // Por exemplo, usando um evento global ou navegação programática
       } catch (storageError) {
         console.error("Erro ao limpar dados de autenticação:", storageError);
       }

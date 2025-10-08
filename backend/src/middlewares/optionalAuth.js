@@ -1,4 +1,4 @@
-// Middleware de autenticação opcional - não bloqueia se não houver token
+// Optional authentication middleware - does not block if no token exists
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const SECRET = process.env.JWT_SECRET;
@@ -6,7 +6,6 @@ const SECRET = process.env.JWT_SECRET;
 module.exports = (req, res, next) => {
   const authHeader = req.headers.authorization;
   
-  // Se não há header de autorização, continua sem usuário
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     req.user = null;
     return next();

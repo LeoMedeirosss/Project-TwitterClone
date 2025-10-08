@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import SearchBar from './SearchBar';
 
-const HEADER_HEIGHT = 130; // Aumentado para acomodar a barra de pesquisa
+const HEADER_HEIGHT = 130;
 
 interface HeaderProps {
   scrollY: Animated.Value;

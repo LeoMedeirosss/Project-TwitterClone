@@ -196,7 +196,7 @@ export default function Profile() {
       createdAt: timeAgo,
       likes: tweet.likes_count || 0,
       likes_count: tweet.likes_count || 0,
-      liked: tweet.liked || false, // Adicionando o campo liked para controle de likes
+      liked: tweet.liked || false,
       comments: Math.floor(Math.random() * 100), // Mocked comments
       retweets: Math.floor(Math.random() * 50),  // Mocked retweets
       views: Math.floor(Math.random() * 1000),   // Mocked views

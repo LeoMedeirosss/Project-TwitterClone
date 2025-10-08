@@ -18,7 +18,6 @@ export default function Index() {
     { useNativeDriver: false }
   );
 
-  // Função para pesquisar tweets
   const handleSearch = (username: string) => {
     if (feedRef.current) {
       (feedRef.current as any).handleSearch(username);

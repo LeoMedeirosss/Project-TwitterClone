@@ -13,7 +13,7 @@ const insertedUser = await knex('users')
   .insert({
     username: 'leo',
     email: 'leo@email.com',
-    password_hash: '1234' // change
+    password_hash: '1234'
   })
   .returning('id');
 

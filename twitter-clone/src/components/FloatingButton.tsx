@@ -25,7 +25,7 @@ export default function FloatingButton() {
 const styles = StyleSheet.create({
   button: {
     position: 'absolute',
-    bottom: 80, // Acima da BottomBar
+    bottom: 80,
     right: 20,
     width: 56,
     height: 56,
