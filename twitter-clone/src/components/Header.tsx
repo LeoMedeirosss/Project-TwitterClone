@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     height: HEADER_HEIGHT,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#202020',
+    backgroundColor: '#101010',
     borderBottomWidth: 1,
     borderBottomColor: '#444',
     position: 'absolute',
@@ -117,9 +117,9 @@ const styles = StyleSheet.create({
   },
   profileIcon: {
     position: 'absolute',
-    top: 0,
-    left: 16,
+    left: 15,
     zIndex: 1,
+    bottom: 8,
   },
   profileAvatar: {
     width: 32,
@@ -134,10 +134,10 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     position: 'absolute',
-    top: 0,
     right: 16,
     zIndex: 1,
     padding: 8,
+    bottom: 6,
   },
   tab: {
     padding: 15,

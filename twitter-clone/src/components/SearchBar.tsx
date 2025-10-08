@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 5,
     marginBottom: 15,
-    backgroundColor: '#202020',
+    backgroundColor: '#101010',
     alignItems: 'center',
     borderBottomWidth: 0,
   },
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginRight: 10,
     color: '#fff',
-    backgroundColor: '#333',
+    backgroundColor: '#202020',
   },
   searchButton: {
     backgroundColor: '#1d9bf0',
