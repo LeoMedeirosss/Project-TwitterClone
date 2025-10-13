@@ -207,4 +207,11 @@ O projeto inclui um sistema completo de avatar:
 - Verifique se o backend está rodando na porta 3000
 - Ajuste a baseURL no `api.ts` conforme seu ambiente
 - Para Android, use `http://10.0.2.2:3000`
+
+### Próximos passos
+- Separar componentes e arquivos maiores(como sidebar, tweetCard e profile) em outros componentes melhores, para que o código fique mais organizado e facil de manter
+- Implementar sistema de notificações
+- Implementar sistema de retweets
+- Implementar tema escuro e claro
+- Implementar sistema de upload de imagens nos tweets
 -----------------------------------------------------------------------------------------------------------------------------------------------
