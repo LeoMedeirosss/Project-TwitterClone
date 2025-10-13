@@ -1,6 +1,6 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl, Text, ActivityIndicator } from 'react-native';
-import TweetCard from './tweetCard';
+import { View, StyleSheet } from 'react-native';
+import FeedList from './FeedList';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useTweets } from '../contexts/TweetContext';
@@ -75,7 +75,7 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
         const uniqueNewTweets = newTweets.filter((tweet: any) => !existingIds.has(tweet.id));
         
         if (uniqueNewTweets.length > 0) {
-          setTweets((prevTweets: Tweet[]) => [...prevTweets, ...uniqueNewTweets]);
+          setTweets([...tweetsRef.current, ...uniqueNewTweets]);
         } else {
           setHasMore(false);
         }
@@ -166,64 +166,18 @@ const Feed = forwardRef<FeedRef, { onScroll: any }>(({ onScroll }, ref) => {
     }
   };
 
-  // Footer loader (appears while loading more tweets)
-  const renderFooter = () => {
-    if (!loading) return null;
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="small" color="#1d9bf0" />
-      </View>
-    );
-  };
-
-  // Empty state (when there are no tweets yet)
-  const renderEmptyOrLoading = () => {
-    if (loading && tweets.length === 0) {
-      return (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#1d9bf0" />
-        </View>
-      );
-    } else if (tweets.length === 0 && searchUsername) {
-      return (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>Nenhum tweet encontrado para "{searchUsername}"</Text>
-          <Text style={styles.emptySubtitle}>Tente pesquisar por outro nome de usuário.</Text>
-        </View>
-      );
-    } else if (tweets.length === 0) {
-      return (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>Faça seu primeiro tweet!</Text>
-          <Text style={styles.emptySubtitle}>Toque no botão de criar tweet para começar.</Text>
-        </View>
-      );
-    }
-    return null;
-  };
-
   return (
     <View style={styles.container}>
-      <FlatList
-        data={tweets ? tweets.map(formatTweetData) : []}
-        renderItem={({ item }) => <TweetCard tweet={item} />}
-        keyExtractor={item => item.id}
-        showsVerticalScrollIndicator={false}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter}
-        contentContainerStyle={{ paddingTop: 130, paddingBottom: 70 }}
+      <FeedList
+        tweets={tweets}
+        loading={loading}
+        refreshing={refreshing}
+        hasMore={hasMore}
+        searchUsername={searchUsername}
         onScroll={onScroll}
-        scrollEventThrottle={16}
-        ListEmptyComponent={renderEmptyOrLoading()}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor="#1d9bf0"
-            colors={["#1d9bf0"]}
-          />
-        }
+        onEndReached={handleLoadMore}
+        onRefresh={handleRefresh}
+        formatTweetData={formatTweetData}
       />
     </View>
   );
@@ -235,27 +189,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
-  },
-  loaderContainer: {
-    paddingVertical: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 120,
-  },
-  emptyTitle: {
-    color: '#e6e6e6',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 6,
-  },
-  emptySubtitle: {
-    color: '#9ca3af',
-    fontSize: 14,
   },
 });
 
