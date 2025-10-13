@@ -1,11 +1,12 @@
 // Profile screen → shows tweets from the logged-in user
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../src/contexts/AuthContext';
-import TweetCard from '../../src/components/tweetCard';
+import ProfileHeader from '../../src/components/ProfileHeader';
+import ProfileInfo from '../../src/components/ProfileInfo';
+import ProfileTweets from '../../src/components/ProfileTweets';
 import api from '../../src/services/api';
 
 interface Tweet {
@@ -227,100 +228,26 @@ export default function Profile() {
 
   return (
     <View style={styles.container}>
+      <ProfileHeader 
+        username={user.username}
+        tweetsCount={userTweets.length}
+        onLogout={handleLogout}
+      />
 
-      {/* Header with back button, user info and logout */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Feather name="arrow-left" size={24} color="#fff" />
-        </TouchableOpacity>
-        <View style={styles.headerInfo}>
-          <Text style={styles.headerTitle}>{user.username}</Text>
-          <Text style={styles.headerSubtitle}>{userTweets.length} tweets</Text>
-        </View>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <Feather name="log-out" size={20} color="#ff4444" />
-        </TouchableOpacity>
-      </View>
+      <ProfileInfo 
+        user={user}
+        tweetsCount={userTweets.length}
+        uploadingAvatar={uploadingAvatar}
+        onAvatarPress={handleAvatarPress}
+      />
 
-      {/* Profile info section (avatar, name, email, join date, stats) */}
-      <View style={styles.profileSection}>
-        <TouchableOpacity 
-          style={styles.avatarContainer} 
-          onPress={handleAvatarPress}
-          disabled={uploadingAvatar}
-        >
-          <View style={styles.avatar}>
-            {(user as any)?.avatar_url ? (
-              <Image 
-                source={{ uri: `http://10.0.2.2:3000${(user as any).avatar_url}` }}
-                style={styles.avatarImage}
-              />
-            ) : (
-              <Feather name="user" size={40} color="#fff" />
-            )}
-            {uploadingAvatar && (
-              <View style={styles.uploadingOverlay}>
-                <Text style={styles.uploadingText}>...</Text>
-              </View>
-            )}
-          </View>
-          <View style={styles.cameraIcon}>
-            <Feather name="camera" size={16} color="#fff" />
-          </View>
-        </TouchableOpacity>
-        
-        <View style={styles.userInfo}>
-          <Text style={styles.displayName}>{user.username}</Text>
-          <Text style={styles.username}>@{user.email?.split('@')[0]}</Text>
-          <Text style={styles.joinDate}>
-            <Feather name="calendar" size={14} color="#888" />
-            {' '}Entrou em {new Date((user as any).created_at || Date.now()).toLocaleDateString('pt-BR', { 
-              month: 'long', 
-              year: 'numeric' 
-            })}
-          </Text>
-        </View>
-
-        {/* User stats */}
-        <View style={styles.statsContainer}>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>{userTweets.length}</Text>
-            <Text style={styles.statLabel}>Tweets</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Tweets section */}
-      <View style={styles.tweetsSection}>
-        <Text style={styles.sectionTitle}>Tweets</Text>
-        
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Carregando tweets...</Text>
-          </View>
-        ) : userTweets.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Feather name="message-circle" size={48} color="#333" />
-            <Text style={styles.emptyText}>Nenhum tweet ainda</Text>
-            <Text style={styles.emptySubtext}>Quando você tweetar, aparecerá aqui.</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={userTweets.map(formatTweetData)}
-            renderItem={({ item }) => <TweetCard tweet={item} />}
-            keyExtractor={item => item.id}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                tintColor="#1d9bf0"
-                colors={["#1d9bf0"]}
-              />
-            }
-          />
-        )}
-      </View>
+      <ProfileTweets 
+        tweets={userTweets}
+        loading={loading}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        formatTweetData={formatTweetData}
+      />
     </View>
   );
 }
@@ -335,167 +262,5 @@ const styles = StyleSheet.create({
     color: '#888',
     textAlign: 'center',
     padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    paddingTop: 50,
-    borderBottomWidth: 1,
-    borderBottomColor: '#222',
-    backgroundColor: '#000',
-  },
-  backButton: {
-    padding: 10,
-  },
-  headerInfo: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#888',
-  },
-  logoutButton: {
-    padding: 10,
-  },
-  profileSection: {
-    padding: 20,
-    backgroundColor: '#000',
-  },
-  avatarContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#333',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    position: 'relative',
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#1d9bf0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  avatarImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
-  cameraIcon: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#1d9bf0',
-    borderRadius: 12,
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#000',
-  },
-  uploadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 40,
-  },
-  uploadingText: {
-    color: '#fff',
-    fontSize: 12,
-  },
-  userInfo: {
-    marginBottom: 16,
-  },
-  displayName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  username: {
-    fontSize: 15,
-    color: '#888',
-    marginBottom: 8,
-  },
-  joinDate: {
-    fontSize: 14,
-    color: '#888',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 10,
-  },
-  stat: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  statLabel: {
-    fontSize: 14,
-    color: '#888',
-  },
-  tweetsSection: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#222',
-  },
-  loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#888',
-  },
-  emptyContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 15,
-    color: '#888',
-    textAlign: 'center',
   },
 });
