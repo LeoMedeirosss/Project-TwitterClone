@@ -209,7 +209,7 @@ O projeto inclui um sistema completo de avatar:
 - Para Android, use `http://10.0.2.2:3000`
 
 ### Próximos passos
-- Separar componentes e arquivos maiores(como tweetCard) em outros componentes melhores, para que o código fique mais organizado e facil de manter
+- Separar componentes e arquivos maiores(como tweetCard) em outros componentes menores, para que o código fique mais organizado e facil de manter
 - Implementar sistema de notificações
 - Implementar sistema de retweets
 - Implementar tema escuro e claro
